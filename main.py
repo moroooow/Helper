@@ -5,7 +5,7 @@ from kivymd.uix.card import MDCard
 from kivymd.uix.label import MDLabel
 from kivymd.uix.button import MDFillRoundFlatButton, MDTextButton
 from functools import partial
-from kivymd.uix.pickers import MDTimePicker, MDDatePicker
+from kivymd.uix.picker import MDTimePicker, MDDatePicker
 from kivymd.uix.selectioncontrol import MDCheckbox
 
 
