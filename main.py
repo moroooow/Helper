@@ -7,6 +7,23 @@ from kivymd.uix.button import MDFillRoundFlatButton, MDTextButton
 from functools import partial
 from kivymd.uix.picker import MDTimePicker, MDDatePicker
 from kivymd.uix.selectioncontrol import MDCheckbox
+from typing import NamedTuple
+import pandas as pd
+
+
+class Task_reminder(NamedTuple):
+    name: str
+    time_begin: str
+    time_end: str
+    date: str
+
+
+class Event(NamedTuple):
+    title: str
+    description: str
+    date: str
+    time_begin: str
+    time_end: str
 
 
 class MainScreen(Screen):
@@ -59,6 +76,8 @@ class MyApp(MDApp):
     events_sport_details = ["test Кубок большого кубка", "test Большой теннис", "test Защита деревни",
                             "test Спорт спорт"]
     events_recreation_details = ["test большие огурцы", "test Цирк клоунов", "test Парад кринжа"]
+    tasks_reminders = []
+    date_of_list = str(pd.datetime.now().date()).replace(",", "-")
     paid_subscriber = True
 
     def __init__(self, **kwargs):
@@ -140,6 +159,7 @@ class MyApp(MDApp):
         task_card.add_widget(MDCheckbox(size_hint=(None, None),
                                         size=(50, 50),
                                         pos_hint={"center_y": .5}))
+        self.tasks_reminders.append(Task_reminder(addingtask.ids.task_input.text, self.begining_time, self.ending_time, self.date_of_list))
         self.begining_time = ""
         self.ending_time = ""
         addingtask.ids.task_input.text = ""
@@ -192,7 +212,7 @@ class MyApp(MDApp):
         addingevent.ids.to_time_event.text = f'до {self.ending_time_event[:5]}'
 
     def set_event_date(self):
-        date_dialog = MDDatePicker(year=2023, month=1, day=1)
+        date_dialog = MDDatePicker(year=int(pd.datetime.now().year), month=int(pd.datetime.now().mounth), day=int(pd.datetime.now().day))
         date_dialog.bind(on_save=self.set_date_event_complete)
         date_dialog.open()
 
@@ -221,6 +241,34 @@ class MyApp(MDApp):
         addingevent.ids.date_of_event.text = "дата"
         self.sm.current = "main"
 
+    def chose_date(self):
+        date_dialog = MDDatePicker(year=int(pd.datetime.now().year), month=int(pd.datetime.now().month), day=int(pd.datetime.now().day))
+        date_dialog.bind(on_save=self.chose_date_complete)
+        date_dialog.open()
+
+    def chose_date_complete(self, instance, value, date):
+        self.date_of_list = str(value)
+        app = MDApp.get_running_app()
+        mainscreen = app.root.get_screen('main')
+        mainscreen.ids.task_bar.clear_widgets()
+        print(self.tasks_reminders)
+        for task in self.tasks_reminders:
+            if task.date == self.date_of_list:
+                task_card = MDCard(elevation=10,
+                                   size_hint=(1, None),
+                                   height=100,
+                                   radius=10,
+                                   padding=10,
+                                   orientation="horizontal")
+                task_card.add_widget(MDLabel(text=task.name))
+                task_card.add_widget(MDLabel(text=f"{task.time_begin}-{task.time_end}",
+                                             halign="right",
+                                             size_hint=(None, 1),
+                                             width=100))
+                task_card.add_widget(MDCheckbox(size_hint=(None, None),
+                                                size=(50, 50),
+                                                pos_hint={"center_y": .5}))
+                mainscreen.ids.task_bar.add_widget(task_card)
 
 
 MyApp().run()
