@@ -142,28 +142,33 @@ class MyApp(MDApp):
     def create_task(self):
         app = MDApp.get_running_app()
         addingtask = app.root.get_screen('addingtask')
+        mainscreen = app.root.get_screen('main')
         addingtask.ids.from_button.text = f'c'
         addingtask.ids.to_button.text = f'до'
-        mainscreen = app.root.get_screen('main')
-        task_card = MDCard(elevation=10,
-                           size_hint=(1, None),
-                           height=100,
-                           radius=10,
-                           padding=10,
-                           orientation="horizontal")
-        task_card.add_widget(MDLabel(text=addingtask.ids.task_input.text))
-        task_card.add_widget(MDLabel(text=f"{self.begining_time}-{self.ending_time}",
-                                     halign="right",
-                                     size_hint=(None, 1),
-                                     width=100))
-        task_card.add_widget(MDCheckbox(size_hint=(None, None),
-                                        size=(50, 50),
-                                        pos_hint={"center_y": .5}))
-        self.tasks_reminders.append(Task_reminder(addingtask.ids.task_input.text, self.begining_time, self.ending_time, self.date_of_list))
+        self.tasks_reminders.append(
+            Task_reminder(addingtask.ids.task_input.text, self.begining_time, self.ending_time, self.date_of_list))
+        self.sort_tasks()
         self.begining_time = ""
         self.ending_time = ""
         addingtask.ids.task_input.text = ""
-        mainscreen.ids.task_bar.add_widget(task_card)
+        mainscreen.ids.task_bar.clear_widgets()
+        for task in self.tasks_reminders:
+            if task.date == self.date_of_list:
+                task_card = MDCard(elevation=10,
+                                   size_hint=(1, None),
+                                   height=100,
+                                   radius=10,
+                                   padding=10,
+                                   orientation="horizontal")
+                task_card.add_widget(MDLabel(text=task.name))
+                task_card.add_widget(MDLabel(text=f"{task.time_begin}-{task.time_end}",
+                                             halign="right",
+                                             size_hint=(None, 1),
+                                             width=100))
+                task_card.add_widget(MDCheckbox(size_hint=(None, None),
+                                                size=(50, 50),
+                                                pos_hint={"center_y": .5}))
+                mainscreen.ids.task_bar.add_widget(task_card)
 
     def build(self):
         self.theme_cls.theme_style = "Light"
@@ -212,7 +217,8 @@ class MyApp(MDApp):
         addingevent.ids.to_time_event.text = f'до {self.ending_time_event[:5]}'
 
     def set_event_date(self):
-        date_dialog = MDDatePicker(year=int(pd.datetime.now().year), month=int(pd.datetime.now().mounth), day=int(pd.datetime.now().day))
+        date_dialog = MDDatePicker(year=int(pd.datetime.now().year), month=int(pd.datetime.now().mounth),
+                                   day=int(pd.datetime.now().day))
         date_dialog.bind(on_save=self.set_date_event_complete)
         date_dialog.open()
 
@@ -242,7 +248,8 @@ class MyApp(MDApp):
         self.sm.current = "main"
 
     def chose_date(self):
-        date_dialog = MDDatePicker(year=int(pd.datetime.now().year), month=int(pd.datetime.now().month), day=int(pd.datetime.now().day))
+        date_dialog = MDDatePicker(year=int(pd.datetime.now().year), month=int(pd.datetime.now().month),
+                                   day=int(pd.datetime.now().day))
         date_dialog.bind(on_save=self.chose_date_complete)
         date_dialog.open()
 
@@ -269,6 +276,31 @@ class MyApp(MDApp):
                                                 size=(50, 50),
                                                 pos_hint={"center_y": .5}))
                 mainscreen.ids.task_bar.add_widget(task_card)
+
+    def sort_tasks(self):
+        n = len(self.tasks_reminders)
+        for j in range(n):
+            already_sorted = True
+            for i in range(n - j - 1):
+                tf = int(self.tasks_reminders[i].time_begin.split(":")[0]) * 60 + int(
+                    self.tasks_reminders[i].time_begin.split(":")[1])
+                ts = int(self.tasks_reminders[i + 1].time_begin.split(":")[0]) * 60 + int(
+                    self.tasks_reminders[i + 1].time_begin.split(":")[1])
+                if tf > ts:
+                    self.tasks_reminders[i], self.tasks_reminders[i + 1] = self.tasks_reminders[i + 1], \
+                                                                           self.tasks_reminders[i]
+                    already_sorted = False
+                elif tf == ts:
+                    tfe = int(self.tasks_reminders[i].time_end.split(":")[0]) * 60 + int(
+                        self.tasks_reminders[i].time_end.split(":")[1])
+                    tse = int(self.tasks_reminders[i + 1].time_end.split(":")[0]) * 60 + int(
+                        self.tasks_reminders[i + 1].time_end.split(":")[1])
+                    if tfe > tse:
+                        self.tasks_reminders[i], self.tasks_reminders[i + 1] = self.tasks_reminders[i + 1], \
+                                                                               self.tasks_reminders[i]
+                        already_sorted = False
+            if already_sorted:
+                break
 
 
 MyApp().run()
