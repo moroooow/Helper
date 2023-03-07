@@ -32,51 +32,46 @@ ScreenManager:
             size_hint_y: None
             size_hint_x: 1
             height: 70
-
             spacing: 20
-            canvas.before:
-                Color:
-                    rgba: 1, 0, 0, .5
-                Rectangle:
-                    pos: self.pos
-                    size: self.size
+            MDCard:
+                elevation: 20
+                Button:
+                    pos_hint: {"center_y": .5}
+                    size_hint: None, None
+                    size: 60, 60
+                    background_color: 0,0,0,0
+                    on_release: app.root.current = "account"
+                    Image:
+                        source: app.menu_icon
+                        size_hint: None, None
+                        center_x: self.parent.center_x
+                        center_y: self.parent.center_y
+                        size_hint: None, None
+                        size: 160, 160
 
-            Button:
-                pos_hint: {"center_y": .5}
-                size_hint: None, None
-                size: 70, 70
-                on_release: app.root.current = "account"
+                ScrollView:
+                    size_hint: 1, 1
+                    MDBoxLayout:
+                        padding: 10
+                        spacing: 10
+                        orientation: "horizontal"
+                        size_hint: None, 1
+                        width: self.minimum_width
 
-            ScrollView:
-                size_hint: 1, 1
-                MDBoxLayout:
-                    padding: 10
-                    spacing: 10
-                    orientation: "horizontal"
-                    size_hint: None, 1
-                    width: self.minimum_width
+                        FilterButton:
+                            text: "button 1"
 
-                    canvas.before:
-                        Color:
-                            rgba: 0, 1, 0, .5
-                        Rectangle:
-                            pos: self.pos
-                            size: self.size
+                        FilterButton:
+                            text: "button 2"
 
-                    FilterButton:
-                        text: "button 1"
+                        FilterButton:
+                            text: "button 3"
 
-                    FilterButton:
-                        text: "button 2"
+                        FilterButton:
+                            text: "button 4"
 
-                    FilterButton:
-                        text: "button 3"
-
-                    FilterButton:
-                        text: "button 4"
-
-                    FilterButton:
-                        text: "button 5"
+                        FilterButton:
+                            text: "button 5"
 
         ScrollView:
             size_hint: 1, 1
@@ -92,35 +87,54 @@ ScreenManager:
                     Rectangle:
                         pos: self.pos
                         size: self.size
-
-        MDFloatLayout:
+        MDCard:
             size_hint_x: 1
             size_hint_y: None
-            height: 100
+            height: 80
+            elevation: 20
+            MDFloatLayout:
 
-            canvas.before:
-                Color:
-                    rgba: 0, 1, 0, .5
-                Rectangle:
-                    pos: self.pos
-                    size: self.size
+                Button:
+                    pos_hint: {"center_y": .5, "center_x": .15}
+                    size_hint: None, None
+                    size: 55, 55
+                    on_release: app.root.current = "addingtask"
+                    background_color: 0,0,0,0
 
-            Button:
-                pos_hint: {"center_y": .5, "center_x": .15}
-                size_hint: None, None
-                size: 70, 70
-                on_release: app.root.current = "addingtask"
+                    Image:
+                        source: app.add_task_icon
+                        size_hint: None, None
+                        center_x: self.parent.center_x
+                        center_y: self.parent.center_y
+                        size_hint: None, None
+                        size: 140, 140
 
-            Button:
-                pos_hint: {"center_y": .5, "center_x": .5}
-                size_hint: None, None
-                size: 70, 70
-                on_release: app.chose_date()
+                Button:
+                    pos_hint: {"center_y": .5, "center_x": .5}
+                    size_hint: None, None
+                    size: 60, 60
+                    background_color: 0,0,0,0
+                    on_release: app.chose_date()
+                    Image:
+                        source: app.calendar_icon
+                        size_hint: None, None
+                        center_x: self.parent.center_x
+                        center_y: self.parent.center_y
+                        size_hint: None, None
+                        size: 160, 160
 
-            Button:
-                pos_hint: {"center_y": .5, "center_x": .85}
-                size_hint: None, None
-                size: 70, 70
+                Button:
+                    pos_hint: {"center_y": .5, "center_x": .85}
+                    size_hint: None, None
+                    background_color: 0,0,0,0
+                    size: 55, 55
+                    Image:
+                        source: app.timer_icon
+                        size_hint: None, None
+                        center_x: self.parent.center_x
+                        center_y: self.parent.center_y
+                        size_hint: None, None
+                        size: 140, 140
 
 
 <AccountScreen>:
@@ -131,6 +145,13 @@ ScreenManager:
         padding: 10
         spacing: 20
 
+        canvas.before:
+            Color:
+                rgba: 228/255, 230/255, 243/255, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
         MDBoxLayout:
             spacing: 120
             orientation: "horizontal"
@@ -138,12 +159,7 @@ ScreenManager:
             size_hint: 1, None
             height: 100
 
-            canvas.before:
-                Color:
-                    rgba: 0, 1, 0, .5
-                Rectangle:
-                    pos: self.pos
-                    size: self.size
+
 
             canvas:
                 Color:
@@ -177,22 +193,28 @@ ScreenManager:
             size: 500, 10
 
         MDTextButton:
-            text: "- Мероприятия"
+            markup: True
+            text: "[b][color=#f50a0a]—[/color] Мероприятия[/b]"
             on_release: app.root.current = "events"
 
         MDTextButton:
-            text: "- Расписание\n  друзей"
+            markup: True
+            text: "[b][color=#cccd00]—[/color] Расписание\n  друзей[/b]"
 
         MDTextButton:
-            text: "- Оформить\n  подписку"
+            markup: True
+
+            text: "[b][color=#14a322]—[/color] Оформить\n  подписку[/b]"
             on_release: app.buy_subscription()
 
         MDTextButton:
-            text: "- Выйти"
+            markup: True
+            text: "[b][color=#f5a50a]—[/color] Выйти[/b]"
             on_release: app.root.current = "main"
 
         MDTextButton:
-            text: "- Помощь"
+            markup: True
+            text: "[b][color=#b80af5]—[/color] Помощь[/b]"
 
         MDLabel:
 

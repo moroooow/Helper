@@ -79,6 +79,10 @@ class MyApp(MDApp):
     tasks_reminders = []
     date_of_list = str(pd.datetime.now().date()).replace(",", "-")
     paid_subscriber = True
+    add_task_icon = "images/add_task_icon.PNG"
+    calendar_icon = "images/calendar.PNG"
+    timer_icon = "images/timer_icon.PNG"
+    menu_icon = "images/menu_icon.PNG"
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
