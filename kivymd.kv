@@ -76,17 +76,13 @@ ScreenManager:
         ScrollView:
             size_hint: 1, 1
             GridLayout:
+                padding: 0, 10, 0, 0
                 id: task_bar
                 cols: 1
                 size_hint: 1, None
                 height: self.minimum_height
                 spacing: 10
                 canvas.before:
-                    Color:
-                        rgba: 0, 0, 1, .5
-                    Rectangle:
-                        pos: self.pos
-                        size: self.size
         MDCard:
             size_hint_x: 1
             size_hint_y: None
@@ -128,6 +124,8 @@ ScreenManager:
                     size_hint: None, None
                     background_color: 0,0,0,0
                     size: 55, 55
+                    on_release: app.root.current = "timer"
+                    on_release: app.start_timer()
                     Image:
                         source: app.timer_icon
                         size_hint: None, None
@@ -238,6 +236,14 @@ ScreenManager:
                 size_hint: None, None
                 size: 100, 50
                 on_release: app.root.current = "events"
+                background_color: 0,0,0,0
+
+                Image:
+                    source: app.back_icon
+                    center_x: self.parent.center_x
+                    center_y: self.parent.center_y
+                    size_hint: None, None
+                    size: 70, 70
 
         ScrollView:
             size_hint: 1, 1
@@ -272,6 +278,14 @@ ScreenManager:
                 size_hint: None, None
                 size: 100, 50
                 on_release: app.root.current = "main"
+                background_color: 0,0,0,0
+
+                Image:
+                    source: app.back_icon
+                    center_x: self.parent.center_x
+                    center_y: self.parent.center_y
+                    size_hint: None, None
+                    size: 70, 70
 
             Spinner:
                 text: "Город"
@@ -357,6 +371,14 @@ ScreenManager:
                 size_hint: None, None
                 size: 100, 50
                 on_release: app.root.current = "eventlist"
+                background_color: 0,0,0,0
+
+                Image:
+                    source: app.back_icon
+                    center_x: self.parent.center_x
+                    center_y: self.parent.center_y
+                    size_hint: None, None
+                    size: 70, 70
         ScrollView:
             BoxLayout:
                 orientation: "vertical"
@@ -406,6 +428,14 @@ ScreenManager:
                         size: 100, 50
                         on_release: app.root.current = "main"
                         on_release: app.reset_time()
+                        background_color: 0,0,0,0
+
+                        Image:
+                            source: app.back_icon
+                            center_x: self.parent.center_x
+                            center_y: self.parent.center_y
+                            size_hint: None, None
+                            size: 70, 70
 
                 MDTextField:
                     id: task_input
@@ -449,18 +479,19 @@ ScreenManager:
             size_hint: 1, None
             height: 70
 
-            canvas.before:
-                Color:
-                    rgba: 0, 1, 0, .5
-                Rectangle:
-                    pos: self.pos
-                    size: self.size
-
             Button:
                 pos_hint: {"top": 1, "left": 1}
                 size_hint: None, None
                 size: 100, 50
                 on_release: app.root.current = "account"
+                background_color: 0,0,0,0
+
+                Image:
+                    source: app.back_icon
+                    center_x: self.parent.center_x
+                    center_y: self.parent.center_y
+                    size_hint: None, None
+                    size: 70, 70
 
         GridLayout:
             cols: 1
@@ -514,3 +545,55 @@ ScreenManager:
             MDFillRoundFlatButton:
                 text: "Submit"
                 on_release: app.submit_event()
+
+
+<TimerScreen>:
+    name: "timer"
+
+    BoxLayout:
+        orientation: "vertical"
+        padding: 10
+        spacing: 10
+
+        FloatLayout:
+            size_hint: 1, None
+            height: 70
+
+            Button:
+                pos_hint: {"top": 1, "left": 1}
+                size_hint: None, None
+                size: 100, 50
+                on_release: app.root.current = "main"
+                background_color: 0,0,0,0
+
+                Image:
+                    source: app.back_icon
+                    center_x: self.parent.center_x
+                    center_y: self.parent.center_y
+                    size_hint: None, None
+                    size: 70, 70
+
+        MDLabel:
+            id: current_task
+            text: "no task found"
+            halign: "center"
+            font_size: 32
+
+        Image:
+            source: app.clock_icon
+            size_hint: None, None
+            size: 300, 300
+            pos_hint: {"center_x": .5}
+
+        MDLabel:
+            text: "Осталость:"
+            halign: "center"
+            font_size: 32
+
+        MDLabel:
+            id: time_remaining
+            text: "__ч __мин"
+            halign: "center"
+            font_size: 32
+
+        MDLabel:

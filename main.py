@@ -9,6 +9,8 @@ from kivymd.uix.picker import MDTimePicker, MDDatePicker
 from kivymd.uix.selectioncontrol import MDCheckbox
 from typing import NamedTuple
 import pandas as pd
+import datetime
+from kivy.clock import Clock
 
 
 class Task_reminder(NamedTuple):
@@ -58,6 +60,10 @@ class AddingEventScreen(Screen):
     pass
 
 
+class TimerScreen(Screen):
+    pass
+
+
 class MyApp(MDApp):
     avatar_source = "images/avatar.png"
     recreation_event_img = "images/recreation_events.PNG"
@@ -78,11 +84,15 @@ class MyApp(MDApp):
     events_recreation_details = ["test большие огурцы", "test Цирк клоунов", "test Парад кринжа"]
     tasks_reminders = []
     date_of_list = str(pd.datetime.now().date()).replace(",", "-")
+    current_time = str(datetime.datetime.now().time())
     paid_subscriber = True
     add_task_icon = "images/add_task_icon.PNG"
     calendar_icon = "images/calendar.PNG"
     timer_icon = "images/timer_icon.PNG"
     menu_icon = "images/menu_icon.PNG"
+    back_icon = "images/back_icon.png"
+    clock_icon = "images/clock_icon.png"
+    current_task_time = ""
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -186,6 +196,8 @@ class MyApp(MDApp):
         self.sm.add_widget(EventDetailsScreen(name="eventdetails"))
         self.sm.add_widget(AddingTaskScreen(name="addingtask"))
         self.sm.add_widget(AddingEventScreen(name="addingevent"))
+        self.sm.add_widget(TimerScreen(name="timer"))
+        Clock.schedule_interval(self.update_timer, 1 / 30.)
 
         return self.sm
 
@@ -193,7 +205,8 @@ class MyApp(MDApp):
         if self.paid_subscriber:
             app = MDApp.get_running_app()
             accountscreen = app.root.get_screen('account')
-            addeventbutton = MDTextButton(text="-Добавить\n  мероприятие")
+            addeventbutton = MDTextButton(markup=True,
+                                          text="[b][color=#f306a7]—[/color] Добавить\n  мероприятие[/b]")
             addeventbutton.bind(on_release=self.to_create_event)
             accountscreen.ids.account_buttons_layout.add_widget(addeventbutton, 2)
 
@@ -262,7 +275,6 @@ class MyApp(MDApp):
         app = MDApp.get_running_app()
         mainscreen = app.root.get_screen('main')
         mainscreen.ids.task_bar.clear_widgets()
-        print(self.tasks_reminders)
         for task in self.tasks_reminders:
             if task.date == self.date_of_list:
                 task_card = MDCard(elevation=10,
@@ -305,6 +317,35 @@ class MyApp(MDApp):
                         already_sorted = False
             if already_sorted:
                 break
+
+    def start_timer(self):
+        app = MDApp.get_running_app()
+        timer = app.root.get_screen('timer')
+        for task in self.tasks_reminders:
+            if task.date == str(pd.datetime.now().date()).replace(",", "-") and int(
+                    task.time_end.split(":")[0]) * 60 + int(
+                task.time_end.split(":")[1]) > int(self.current_time.split(":")[0]) * 60 + int(
+                self.current_time.split(":")[1]):
+                timer.ids.current_task.text = task.name
+                self.current_task_time = task.time_end
+                break
+
+    def update_timer(self, *args):
+        try:
+            self.current_time = str(datetime.datetime.now().time())
+            app = MDApp.get_running_app()
+            timer = app.root.get_screen('timer')
+            hrem = int(self.current_task_time.split(":")[0]) - int(self.current_time.split(":")[0])
+            mrem = int(self.current_task_time.split(":")[1]) - int(self.current_time.split(":")[1])
+            if mrem < 0:
+                hrem -= 1
+                mrem += 60
+            if hrem < 0:
+                timer.ids.time_remaining.text = "время вышло"
+            else:
+                timer.ids.time_remaining.text = f"{hrem}ч {mrem}мин"
+        except(ValueError):
+            pass
 
 
 MyApp().run()
