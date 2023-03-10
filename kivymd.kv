@@ -437,6 +437,105 @@ ScreenManager:
                             size_hint: None, None
                             size: 70, 70
 
+                GridLayout:
+                    cols: 2
+                    BoxLayout:
+                        orientation: "horizontal"
+
+                        MDCheckbox:
+                            id: chb_once
+                            size_hint: None, None
+                            size: 50, 50
+                            pos_hint: {"center_y": .5}
+                            active: True
+
+                        MDLabel:
+                            text: "Один раз"
+
+                    BoxLayout:
+                        orientation: "horizontal"
+
+                        MDCheckbox:
+                            id: chb_mon
+                            size_hint: None, None
+                            size: 50, 50
+                            pos_hint: {"center_y": .5}
+
+                        MDLabel:
+                            text: "Пн"
+
+                    BoxLayout:
+                        orientation: "horizontal"
+
+                        MDCheckbox:
+                            id: chb_tue
+                            size_hint: None, None
+                            size: 50, 50
+                            pos_hint: {"center_y": .5}
+
+                        MDLabel:
+                            text: "Вт"
+
+                    BoxLayout:
+                        orientation: "horizontal"
+
+                        MDCheckbox:
+                            id: chb_wed
+                            size_hint: None, None
+                            size: 50, 50
+                            pos_hint: {"center_y": .5}
+
+                        MDLabel:
+                            text: "Ср"
+
+                    BoxLayout:
+                        orientation: "horizontal"
+
+                        MDCheckbox:
+                            id: chb_thu
+                            size_hint: None, None
+                            size: 50, 50
+                            pos_hint: {"center_y": .5}
+
+                        MDLabel:
+                            text: "Чт"
+
+                    BoxLayout:
+                        orientation: "horizontal"
+
+                        MDCheckbox:
+                            id: chb_fri
+                            size_hint: None, None
+                            size: 50, 50
+                            pos_hint: {"center_y": .5}
+
+                        MDLabel:
+                            text: "Пт"
+
+                    BoxLayout:
+                        orientation: "horizontal"
+
+                        MDCheckbox:
+                            id: chb_sat
+                            size_hint: None, None
+                            size: 50, 50
+                            pos_hint: {"center_y": .5}
+
+                        MDLabel:
+                            text: "Сб"
+
+                    BoxLayout:
+                        orientation: "horizontal"
+
+                        MDCheckbox:
+                            id: chb_sun
+                            size_hint: None, None
+                            size: 50, 50
+                            pos_hint: {"center_y": .5}
+
+                        MDLabel:
+                            text: "Вс"
+
                 MDTextField:
                     id: task_input
                     hint_text: "Задача"
@@ -595,5 +694,9 @@ ScreenManager:
             text: "__ч __мин"
             halign: "center"
             font_size: 32
+
+        MDProgressBar:
+            id: time_bar
+            value: 0
 
         MDLabel:

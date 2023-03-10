@@ -18,6 +18,7 @@ class Task_reminder(NamedTuple):
     time_begin: str
     time_end: str
     date: str
+    done: bool
 
 
 class Event(NamedTuple):
@@ -83,7 +84,7 @@ class MyApp(MDApp):
                             "test Спорт спорт"]
     events_recreation_details = ["test большие огурцы", "test Цирк клоунов", "test Парад кринжа"]
     tasks_reminders = []
-    date_of_list = str(pd.datetime.now().date()).replace(",", "-")
+    date_of_list = pd.datetime.now().date()
     current_time = str(datetime.datetime.now().time())
     paid_subscriber = True
     add_task_icon = "images/add_task_icon.PNG"
@@ -93,6 +94,7 @@ class MyApp(MDApp):
     back_icon = "images/back_icon.png"
     clock_icon = "images/clock_icon.png"
     current_task_time = ""
+    current_task_begin = ""
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -159,15 +161,43 @@ class MyApp(MDApp):
         mainscreen = app.root.get_screen('main')
         addingtask.ids.from_button.text = f'c'
         addingtask.ids.to_button.text = f'до'
-        self.tasks_reminders.append(
-            Task_reminder(addingtask.ids.task_input.text, self.begining_time, self.ending_time, self.date_of_list))
+        date = ""
+        if addingtask.ids.chb_once.active:
+            self.tasks_reminders.append(
+                Task_reminder(addingtask.ids.task_input.text, self.begining_time, self.ending_time, str(self.date_of_list).replace(",", "-"),
+                              False))
+        else:
+            if addingtask.ids.chb_mon.active:
+                date += "0"
+
+            if addingtask.ids.chb_tue.active:
+                date += "1"
+
+            if addingtask.ids.chb_wed.active:
+                date += "2"
+
+            if addingtask.ids.chb_thu.active:
+                date += "3"
+
+            if addingtask.ids.chb_fri.active:
+                date += "4"
+
+            if addingtask.ids.chb_sat.active:
+                date += "5"
+
+            if addingtask.ids.chb_sun.active:
+                date += "6"
+
+            self.tasks_reminders.append(
+                Task_reminder(addingtask.ids.task_input.text, self.begining_time, self.ending_time, date, False))
+
         self.sort_tasks()
         self.begining_time = ""
         self.ending_time = ""
         addingtask.ids.task_input.text = ""
         mainscreen.ids.task_bar.clear_widgets()
         for task in self.tasks_reminders:
-            if task.date == self.date_of_list:
+            if str(self.date_of_list).replace(",", "-") in task.date or str(self.date_of_list.weekday()) in task.date:
                 task_card = MDCard(elevation=10,
                                    size_hint=(1, None),
                                    height=100,
@@ -271,12 +301,13 @@ class MyApp(MDApp):
         date_dialog.open()
 
     def chose_date_complete(self, instance, value, date):
-        self.date_of_list = str(value)
+        print(self.tasks_reminders[0])
+        self.date_of_list = value
         app = MDApp.get_running_app()
         mainscreen = app.root.get_screen('main')
         mainscreen.ids.task_bar.clear_widgets()
         for task in self.tasks_reminders:
-            if task.date == self.date_of_list:
+            if str(self.date_of_list).replace(",", "-") in task.date or str(self.date_of_list.weekday()) in task.date:
                 task_card = MDCard(elevation=10,
                                    size_hint=(1, None),
                                    height=100,
@@ -328,6 +359,7 @@ class MyApp(MDApp):
                 self.current_time.split(":")[1]):
                 timer.ids.current_task.text = task.name
                 self.current_task_time = task.time_end
+                self.current_task_begin = task.time_begin
                 break
 
     def update_timer(self, *args):
@@ -337,6 +369,10 @@ class MyApp(MDApp):
             timer = app.root.get_screen('timer')
             hrem = int(self.current_task_time.split(":")[0]) - int(self.current_time.split(":")[0])
             mrem = int(self.current_task_time.split(":")[1]) - int(self.current_time.split(":")[1])
+            progress = (hrem * 60 + mrem) / ((int(self.current_task_time.split(":")[0]) - int(
+                self.current_task_begin.split(":")[0])) * 60 + (int(self.current_task_time.split(":")[1]) - int(
+                self.current_task_begin.split(":")[1]))) * 100
+            timer.ids.time_bar.value = progress
             if mrem < 0:
                 hrem -= 1
                 mrem += 60
