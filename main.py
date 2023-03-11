@@ -3,7 +3,9 @@ from kivymd.app import MDApp
 from kivy.uix.screenmanager import Screen, ScreenManager, NoTransition
 from kivymd.uix.card import MDCard
 from kivymd.uix.label import MDLabel
-from kivymd.uix.button import MDFillRoundFlatButton, MDTextButton
+from kivymd.uix.button import MDFillRoundFlatButton, MDTextButton, MDFlatButton
+from kivymd.uix.dialog import MDDialog
+from kivy.uix.button import Button
 from functools import partial
 from kivymd.uix.picker import MDTimePicker, MDDatePicker
 from kivymd.uix.selectioncontrol import MDCheckbox
@@ -82,6 +84,7 @@ class MyApp(MDApp):
     date_of_list = pd.datetime.now().date()
     current_time = str(datetime.datetime.now().time())
     paid_subscriber = True
+    in_delete_mode = False
     add_task_icon = "images/add_task_icon.PNG"
     calendar_icon = "images/calendar.PNG"
     timer_icon = "images/timer_icon.PNG"
@@ -97,6 +100,7 @@ class MyApp(MDApp):
     current_task_time = ""
     current_task_begin = ""
     current_event = None
+    current_filter = "@"
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -115,8 +119,9 @@ class MyApp(MDApp):
                                 radius=10,
                                 padding=10,
                                 orientation="horizontal")
-                ev_box.add_widget(MDLabel(text=f"{event.title}\n[size=12]{event.date} \nc{event.time_begin} до{event.time_end}[/size]",
-                                          markup=True))
+                ev_box.add_widget(MDLabel(
+                    text=f"{event.title}\n[size=12]{event.date} \nc{event.time_begin} до{event.time_end}[/size]",
+                    markup=True))
                 ev_box.add_widget(MDFillRoundFlatButton(text="подробнее..."))
                 buttoncallback = partial(self.show_event_details, event)
                 ev_box.bind(on_release=buttoncallback)
@@ -305,7 +310,7 @@ class MyApp(MDApp):
         mainscreen = app.root.get_screen('main')
         mainscreen.ids.task_bar.clear_widgets()
         for task in self.tasks_reminders:
-            if str(self.date_of_list).replace(",", "-") in task.date or str(self.date_of_list.weekday()) in task.date:
+            if (str(self.date_of_list).replace(",", "-") in task.date or str(self.date_of_list.weekday()) in task.date) and not f"-{self.date_of_list}" in task.date:
                 task_card = MDCard(elevation=10,
                                    size_hint=(1, None),
                                    height=100,
@@ -385,10 +390,11 @@ class MyApp(MDApp):
         app = MDApp.get_running_app()
         mainscreen = app.root.get_screen('main')
         mainscreen.ids.task_bar.clear_widgets()
+        self.current_filter = filter
         if filter == "@":
             for task in self.tasks_reminders:
-                if str(self.date_of_list).replace(",", "-") in task.date or str(
-                        self.date_of_list.weekday()) in task.date:
+                if (str(self.date_of_list).replace(",", "-") in task.date or str(
+                        self.date_of_list.weekday()) in task.date) and not f"-{self.date_of_list}" in task.date:
                     task_card = MDCard(elevation=10,
                                        size_hint=(1, None),
                                        height=100,
@@ -407,7 +413,7 @@ class MyApp(MDApp):
         else:
             for task in self.tasks_reminders:
                 if (str(self.date_of_list).replace(",", "-") in task.date or str(
-                        self.date_of_list.weekday()) in task.date) and task.type == filter:
+                        self.date_of_list.weekday()) in task.date) and task.type == filter and not f"-{self.date_of_list}" in task.date:
                     task_card = MDCard(elevation=10,
                                        size_hint=(1, None),
                                        height=100,
@@ -425,11 +431,86 @@ class MyApp(MDApp):
                     mainscreen.ids.task_bar.add_widget(task_card)
 
     def add_event_to_tasks(self):
-        self.tasks_reminders.append(Task_reminder(self.current_event.title, self.current_event.type, self.current_event.time_begin, self.current_event.time_end, self.current_event.date))
+        self.tasks_reminders.append(
+            Task_reminder(self.current_event.title, self.current_event.type, self.current_event.time_begin,
+                          self.current_event.time_end, self.current_event.date))
         self.sort_tasks()
         self.filter_tasks("@")
-        print(self.tasks_reminders[0])
-        print(self.date_of_list)
+
+    def enter_delete_mode(self):
+        app = MDApp.get_running_app()
+        mainscreen = app.root.get_screen('main')
+        mainscreen.ids.task_bar.clear_widgets()
+        self.in_delete_mode = not self.in_delete_mode
+        for task in self.tasks_reminders:
+            if (str(self.date_of_list).replace(",", "-") in task.date or str(
+                    self.date_of_list.weekday()) in task.date) and not f"-{self.date_of_list}" in task.date:
+                task_card = MDCard(elevation=10,
+                                   size_hint=(1, None),
+                                   height=100,
+                                   radius=10,
+                                   padding=10,
+                                   orientation="horizontal")
+                task_card.add_widget(MDLabel(text=task.name))
+                task_card.add_widget(MDLabel(text=f"{task.time_begin}-{task.time_end}",
+                                             halign="right",
+                                             size_hint=(None, 1),
+                                             width=100))
+                if self.in_delete_mode:
+                    delete_button = Button(size_hint=(None, None),
+                                           size=(50, 50),
+                                           pos_hint={"center_y": .5})
+                    buttoncallback = partial(self.delete_task, delete_button.parent)
+                    delete_button.bind(on_release=buttoncallback)
+                    task_card.add_widget(delete_button)
+                else:
+                    task_card.add_widget(MDCheckbox(size_hint=(None, None),
+                                                    size=(50, 50),
+                                                    pos_hint={"center_y": .5}))
+                mainscreen.ids.task_bar.add_widget(task_card)
+
+    def delete_task(self, args, task):
+        for task_a in self.tasks_reminders:
+            if task.parent.children[2].text == task_a.name and task_a.time_begin == \
+                    task.parent.children[1].text.split("-")[0] and task_a.time_end == \
+                    task.parent.children[1].text.split("-")[1]:
+                if str(self.date_of_list) == task_a.date:
+                    self.tasks_reminders.remove(task_a)
+                    print(self.tasks_reminders)
+                    break
+                elif str(self.date_of_list.weekday()) in task_a.date:
+                    buttoncallback1 = partial(self.delete_completely, task_a)
+                    buttoncallback2 = partial(self.delete_for_the_day, task_a)
+                    self.dialog = MDDialog(
+                        title="Внимание!",
+                        text="Как удалить это задание?",
+                        buttons=[
+                            MDFlatButton(
+                                text="НА ВСЕ ДНИ",
+                                on_release=buttoncallback1
+                            ),
+                            MDFlatButton(
+                                text="НА СЕГОДНЯ",
+                                on_release=buttoncallback2
+                            ),
+                        ],
+                    )
+                    self.dialog.open()
+        self.filter_tasks(self.current_filter)
+        self.enter_delete_mode()
+
+    def delete_completely(self, task, args):
+        self.tasks_reminders.remove(task)
+        self.dialog.dismiss()
+
+    def delete_for_the_day(self, task, args):
+        self.tasks_reminders.remove(task)
+        new_task = Task_reminder(task.name, task.type, task.time_begin, task.time_end, task.date + f"-{self.date_of_list}")
+        self.tasks_reminders.append(new_task)
+        self.sort_tasks()
+        self.filter_tasks(self.current_filter)
+        self.dialog.dismiss()
+
 
 
 MyApp().run()

@@ -32,9 +32,11 @@ ScreenManager:
             size_hint_y: None
             size_hint_x: 1
             height: 70
-            spacing: 20
+
             MDCard:
                 elevation: 20
+                spacing: 10
+                padding: 10
                 Button:
                     pos_hint: {"center_y": .5}
                     size_hint: None, None
@@ -52,10 +54,16 @@ ScreenManager:
                 ScrollView:
                     size_hint: 1, 1
                     MDBoxLayout:
-                        padding: 10
                         orientation: "horizontal"
                         size_hint: None, 1
                         width: self.minimum_width
+
+                        FilterButton:
+                            on_release: app.filter_tasks("@")
+                            Image:
+                                source: app.reset_filter_icon
+                                center_x: self.parent.center_x
+                                center_y: self.parent.center_y
 
                         FilterButton:
                             on_release: app.filter_tasks("работа")
@@ -92,12 +100,11 @@ ScreenManager:
                                 center_x: self.parent.center_x
                                 center_y: self.parent.center_y
 
-                        FilterButton:
-                            on_release: app.filter_tasks("@")
-                            Image:
-                                source: app.reset_filter_icon
-                                center_x: self.parent.center_x
-                                center_y: self.parent.center_y
+                Button:
+                    size_hint: None, None
+                    size: 60, 60
+                    pos_hint: {"center_y": .5}
+                    on_release: app.enter_delete_mode()
 
         ScrollView:
             size_hint: 1, 1
