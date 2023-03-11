@@ -15,10 +15,10 @@ from kivy.clock import Clock
 
 class Task_reminder(NamedTuple):
     name: str
+    type: str
     time_begin: str
     time_end: str
     date: str
-    done: bool
 
 
 class Event(NamedTuple):
@@ -27,6 +27,7 @@ class Event(NamedTuple):
     date: str
     time_begin: str
     time_end: str
+    type: str
 
 
 class MainScreen(Screen):
@@ -38,10 +39,6 @@ class AccountScreen(Screen):
 
 
 class AddingTaskScreen(Screen):
-    pass
-
-
-class CalendarScreen(Screen):
     pass
 
 
@@ -76,13 +73,11 @@ class MyApp(MDApp):
     cities = ["city_1", "city_2", "city_3", "city_4", "city_5", "city_6", "city_7", "city_8"]
     dates_of_events = "31.01-03.03"
     event_layout_width = 840
-    events_recreation = ["Фестиваль \"большие огурцы\"", "Цирк клоунов", "Парад кринжа"]
-    events_sport = ["Кубок большого кубка", "Большой теннис", "Защита деревни", "Спорт спорт"]
-    events_concerts = ["Концерт ГРОБ", "Концерт Цоя", "Концерт Дайте танк(!)"]
-    events_concerts_details = ["test grob", "test tsoi", "test tank"]
-    events_sport_details = ["test Кубок большого кубка", "test Большой теннис", "test Защита деревни",
-                            "test Спорт спорт"]
-    events_recreation_details = ["test большие огурцы", "test Цирк клоунов", "test Парад кринжа"]
+    events = [
+        Event("Фестиваль \"большие огурцы\"", "test большие огурцы", "2022-12-23", "12:30", "13:00", "recreation"),
+        Event("Цирк клоунов", "test Цирк клоунов", "2022-12-23", "12:30", "13:00", "sport"),
+        Event("Парад кринжа", "test Парад кринжа", "2022-12-23", "12:30", "13:00", "concerts")]
+    task_types = ["учёба", "работа", "хобби", "покупки", "другое"]
     tasks_reminders = []
     date_of_list = pd.datetime.now().date()
     current_time = str(datetime.datetime.now().time())
@@ -93,38 +88,48 @@ class MyApp(MDApp):
     menu_icon = "images/menu_icon.PNG"
     back_icon = "images/back_icon.png"
     clock_icon = "images/clock_icon.png"
+    shoping_filter_icon = "images/shoping_filter_icon.PNG"
+    book_filter_icon = "images/book_filter_icon.PNG"
+    work_filter_icon = "images/work_filter_icon.PNG"
+    pen_filter_icon = "images/pen_filter_icon.PNG"
+    hobby_filter_icon = "images/hobby_filter_icon.PNG"
+    reset_filter_icon = "images/reset_filter_icon.PNG"
     current_task_time = ""
     current_task_begin = ""
+    current_event = None
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.sm = ScreenManager(transition=NoTransition())
         self.screen = Builder.load_file("kivymd.kv")
 
-    def set_events_in_list(self, event_list_sec, event_details_list):
+    def set_events_in_list(self, event_type):
         app = MDApp.get_running_app()
         event_list = app.root.get_screen('eventlist')
         event_list.ids.events_list_layout.clear_widgets()
-        for i in range(len(event_list_sec)):
-            ev_box = MDCard(elevation=10,
-                            size_hint=(1, None),
-                            height=100,
-                            radius=10,
-                            padding=10,
-                            orientation="horizontal")
-            ev_box.add_widget(MDLabel(text=event_list_sec[i]))
-            ev_box.add_widget(MDFillRoundFlatButton(text="подробнее..."))
-            buttoncallback = partial(self.show_event_details, [event_list_sec[i], event_details_list[i]])
-            ev_box.bind(on_release=buttoncallback)
-            event_list.ids.events_list_layout.add_widget(ev_box)
+        for event in self.events:
+            if event_type == event.type:
+                ev_box = MDCard(elevation=10,
+                                size_hint=(1, None),
+                                height=100,
+                                radius=10,
+                                padding=10,
+                                orientation="horizontal")
+                ev_box.add_widget(MDLabel(text=f"{event.title}\n[size=12]{event.date} \nc{event.time_begin} до{event.time_end}[/size]",
+                                          markup=True))
+                ev_box.add_widget(MDFillRoundFlatButton(text="подробнее..."))
+                buttoncallback = partial(self.show_event_details, event)
+                ev_box.bind(on_release=buttoncallback)
+                event_list.ids.events_list_layout.add_widget(ev_box)
 
-    def show_event_details(self, detail_text_header, instance):
+    def show_event_details(self, event, instance):
         self.sm.current = "eventdetails"
         app = MDApp.get_running_app()
         event_details = app.root.get_screen('eventdetails')
         event_details.ids.event_image.source = "images/kokun.png"
-        event_details.ids.event_header.text = detail_text_header[0]
-        event_details.ids.event_label.text = detail_text_header[1]
+        event_details.ids.event_header.text = event.title
+        event_details.ids.event_label.text = f"[size=12]{event.date}\nc {event.time_begin} до {event.time_end}[/size]\n\n{event.description}"
+        self.current_event = event
 
     def time_picker(self, arg):
         time_dialog = MDTimePicker()
@@ -164,8 +169,8 @@ class MyApp(MDApp):
         date = ""
         if addingtask.ids.chb_once.active:
             self.tasks_reminders.append(
-                Task_reminder(addingtask.ids.task_input.text, self.begining_time, self.ending_time, str(self.date_of_list).replace(",", "-"),
-                              False))
+                Task_reminder(addingtask.ids.task_input.text, addingtask.ids.type_spinner.text, self.begining_time,
+                              self.ending_time, str(self.date_of_list).replace(",", "-")))
         else:
             if addingtask.ids.chb_mon.active:
                 date += "0"
@@ -189,7 +194,8 @@ class MyApp(MDApp):
                 date += "6"
 
             self.tasks_reminders.append(
-                Task_reminder(addingtask.ids.task_input.text, self.begining_time, self.ending_time, date, False))
+                Task_reminder(addingtask.ids.task_input.text, addingtask.ids.type_spinner.text, self.begining_time,
+                              self.ending_time, date))
 
         self.sort_tasks()
         self.begining_time = ""
@@ -220,7 +226,6 @@ class MyApp(MDApp):
 
         self.sm.add_widget(MainScreen(name="main"))
         self.sm.add_widget(AccountScreen(name="account"))
-        self.sm.add_widget(CalendarScreen(name="calendar"))
         self.sm.add_widget(EventsScreen(name="events"))
         self.sm.add_widget(EventsListScreen(name="eventlist"))
         self.sm.add_widget(EventDetailsScreen(name="eventdetails"))
@@ -281,12 +286,6 @@ class MyApp(MDApp):
         self.submited_event_header = addingevent.ids.event_create_header.text
         self.submited_event_description = addingevent.ids.event_create_description.text
         self.submited_event_location = addingevent.ids.event_create_location.text
-        print(self.submited_event_header)
-        print(self.submited_event_description)
-        print(self.submited_event_location)
-        print(self.date_event)
-        print(self.begining_time_event)
-        print(self.ending_time_event)
         addingevent.ids.event_create_header.text = ""
         addingevent.ids.event_create_description.text = ""
         addingevent.ids.to_time_event.text = "до"
@@ -301,7 +300,6 @@ class MyApp(MDApp):
         date_dialog.open()
 
     def chose_date_complete(self, instance, value, date):
-        print(self.tasks_reminders[0])
         self.date_of_list = value
         app = MDApp.get_running_app()
         mainscreen = app.root.get_screen('main')
@@ -382,6 +380,56 @@ class MyApp(MDApp):
                 timer.ids.time_remaining.text = f"{hrem}ч {mrem}мин"
         except(ValueError):
             pass
+
+    def filter_tasks(self, filter):
+        app = MDApp.get_running_app()
+        mainscreen = app.root.get_screen('main')
+        mainscreen.ids.task_bar.clear_widgets()
+        if filter == "@":
+            for task in self.tasks_reminders:
+                if str(self.date_of_list).replace(",", "-") in task.date or str(
+                        self.date_of_list.weekday()) in task.date:
+                    task_card = MDCard(elevation=10,
+                                       size_hint=(1, None),
+                                       height=100,
+                                       radius=10,
+                                       padding=10,
+                                       orientation="horizontal")
+                    task_card.add_widget(MDLabel(text=task.name))
+                    task_card.add_widget(MDLabel(text=f"{task.time_begin}-{task.time_end}",
+                                                 halign="right",
+                                                 size_hint=(None, 1),
+                                                 width=100))
+                    task_card.add_widget(MDCheckbox(size_hint=(None, None),
+                                                    size=(50, 50),
+                                                    pos_hint={"center_y": .5}))
+                    mainscreen.ids.task_bar.add_widget(task_card)
+        else:
+            for task in self.tasks_reminders:
+                if (str(self.date_of_list).replace(",", "-") in task.date or str(
+                        self.date_of_list.weekday()) in task.date) and task.type == filter:
+                    task_card = MDCard(elevation=10,
+                                       size_hint=(1, None),
+                                       height=100,
+                                       radius=10,
+                                       padding=10,
+                                       orientation="horizontal")
+                    task_card.add_widget(MDLabel(text=task.name))
+                    task_card.add_widget(MDLabel(text=f"{task.time_begin}-{task.time_end}",
+                                                 halign="right",
+                                                 size_hint=(None, 1),
+                                                 width=100))
+                    task_card.add_widget(MDCheckbox(size_hint=(None, None),
+                                                    size=(50, 50),
+                                                    pos_hint={"center_y": .5}))
+                    mainscreen.ids.task_bar.add_widget(task_card)
+
+    def add_event_to_tasks(self):
+        self.tasks_reminders.append(Task_reminder(self.current_event.title, self.current_event.type, self.current_event.time_begin, self.current_event.time_end, self.current_event.date))
+        self.sort_tasks()
+        self.filter_tasks("@")
+        print(self.tasks_reminders[0])
+        print(self.date_of_list)
 
 
 MyApp().run()

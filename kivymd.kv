@@ -1,6 +1,7 @@
 <FilterButton@Button>:
     size_hint_x: None
     width: 100
+    background_color: 0,0,0,0
 
 
 <EventCard@MDCard>:
@@ -12,7 +13,6 @@
 
 ScreenManager:
     MainScreen:
-    CalendarScreen:
     EventsScreen:
     AccountScreen:
     EventsListScreen:
@@ -53,25 +53,51 @@ ScreenManager:
                     size_hint: 1, 1
                     MDBoxLayout:
                         padding: 10
-                        spacing: 10
                         orientation: "horizontal"
                         size_hint: None, 1
                         width: self.minimum_width
 
                         FilterButton:
-                            text: "button 1"
+                            on_release: app.filter_tasks("работа")
+                            Image:
+                                source: app.work_filter_icon
+                                center_x: self.parent.center_x
+                                center_y: self.parent.center_y
 
                         FilterButton:
-                            text: "button 2"
+                            on_release: app.filter_tasks("учёба")
+                            Image:
+                                source: app.book_filter_icon
+                                center_x: self.parent.center_x
+                                center_y: self.parent.center_y
 
                         FilterButton:
-                            text: "button 3"
+                            on_release: app.filter_tasks("покупки")
+                            Image:
+                                source: app.shoping_filter_icon
+                                center_x: self.parent.center_x
+                                center_y: self.parent.center_y
 
                         FilterButton:
-                            text: "button 4"
+                            on_release: app.filter_tasks("хобби")
+                            Image:
+                                source: app.hobby_filter_icon
+                                center_x: self.parent.center_x
+                                center_y: self.parent.center_y
 
                         FilterButton:
-                            text: "button 5"
+                            on_release: app.filter_tasks("другое")
+                            Image:
+                                source: app.pen_filter_icon
+                                center_x: self.parent.center_x
+                                center_y: self.parent.center_y
+
+                        FilterButton:
+                            on_release: app.filter_tasks("@")
+                            Image:
+                                source: app.reset_filter_icon
+                                center_x: self.parent.center_x
+                                center_y: self.parent.center_y
 
         ScrollView:
             size_hint: 1, 1
@@ -217,10 +243,6 @@ ScreenManager:
         MDLabel:
 
 
-<CalendarScreen>:
-    name: "calendar"
-
-
 <EventsListScreen>:
     name: "eventlist"
 
@@ -328,7 +350,7 @@ ScreenManager:
                                 text: "посмотреть"
                                 pos_hint: {"center_x": .5}
                                 on_release: app.root.current = "eventlist"
-                                on_release: app.set_events_in_list(app.events_recreation, app.events_recreation_details)
+                                on_release: app.set_events_in_list("recreation")
 
                     EventCard:
                         BoxLayout:
@@ -340,7 +362,7 @@ ScreenManager:
                                 text: "посмотреть"
                                 pos_hint: {"center_x": .5}
                                 on_release: app.root.current = "eventlist"
-                                on_release: app.set_events_in_list(app.events_sport, app.events_sport_details)
+                                on_release: app.set_events_in_list("sport")
 
                     EventCard:
                         BoxLayout:
@@ -352,7 +374,7 @@ ScreenManager:
                                 text: "посмотреть"
                                 pos_hint: {"center_x": .5}
                                 on_release: app.root.current = "eventlist"
-                                on_release: app.set_events_in_list(app.events_concerts, app.events_concerts_details)
+                                on_release: app.set_events_in_list("concerts")
 
 
 <EventDetailsScreen>:
@@ -404,7 +426,14 @@ ScreenManager:
 
                         MDLabel:
                             id: event_label
+                            markup: True
                             adaptive_height: True
+
+                MDFillRoundFlatButton:
+                    pos_hint: {"center_x": .5}
+                    text: "Добавить"
+
+                    on_release: app.add_event_to_tasks()
 
 <AddingTaskScreen>:
     name: "addingtask"
@@ -437,15 +466,31 @@ ScreenManager:
                             size_hint: None, None
                             size: 70, 70
 
+
+
+                Spinner:
+                    id: type_spinner
+                    text: "другое"
+                    values: app.task_types
+                    size_hint: None, None
+                    size: 100, 50
+                    pos_hint: {"center_x": .5}
+
+                MDLabel:
+                    size_hint: 1, None
+                    height: 30
+
                 GridLayout:
                     cols: 2
+                    size_hint: 1, None
+                    height: 200
                     BoxLayout:
                         orientation: "horizontal"
 
                         MDCheckbox:
                             id: chb_once
                             size_hint: None, None
-                            size: 50, 50
+                            size: 40, 40
                             pos_hint: {"center_y": .5}
                             active: True
 
@@ -458,7 +503,7 @@ ScreenManager:
                         MDCheckbox:
                             id: chb_mon
                             size_hint: None, None
-                            size: 50, 50
+                            size: 40, 40
                             pos_hint: {"center_y": .5}
 
                         MDLabel:
@@ -470,7 +515,7 @@ ScreenManager:
                         MDCheckbox:
                             id: chb_tue
                             size_hint: None, None
-                            size: 50, 50
+                            size: 40, 40
                             pos_hint: {"center_y": .5}
 
                         MDLabel:
@@ -482,7 +527,7 @@ ScreenManager:
                         MDCheckbox:
                             id: chb_wed
                             size_hint: None, None
-                            size: 50, 50
+                            size: 40, 40
                             pos_hint: {"center_y": .5}
 
                         MDLabel:
@@ -494,7 +539,7 @@ ScreenManager:
                         MDCheckbox:
                             id: chb_thu
                             size_hint: None, None
-                            size: 50, 50
+                            size: 40, 40
                             pos_hint: {"center_y": .5}
 
                         MDLabel:
@@ -506,7 +551,7 @@ ScreenManager:
                         MDCheckbox:
                             id: chb_fri
                             size_hint: None, None
-                            size: 50, 50
+                            size: 40, 40
                             pos_hint: {"center_y": .5}
 
                         MDLabel:
@@ -518,7 +563,7 @@ ScreenManager:
                         MDCheckbox:
                             id: chb_sat
                             size_hint: None, None
-                            size: 50, 50
+                            size: 40, 40
                             pos_hint: {"center_y": .5}
 
                         MDLabel:
@@ -530,7 +575,7 @@ ScreenManager:
                         MDCheckbox:
                             id: chb_sun
                             size_hint: None, None
-                            size: 50, 50
+                            size: 40, 40
                             pos_hint: {"center_y": .5}
 
                         MDLabel:
@@ -559,6 +604,7 @@ ScreenManager:
                         text: "до"
                         pos_hint: {"center_y": .5}
                         on_release: app.time_picker("to")
+
                 MDFillRoundFlatButton:
                     text: "добавить"
                     pos_hint: {"center_x": .5}
