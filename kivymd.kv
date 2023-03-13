@@ -12,6 +12,8 @@
 
 
 ScreenManager:
+    RegisterScreen:
+    LoginScreen:
     MainScreen:
     EventsScreen:
     AccountScreen:
@@ -19,6 +21,97 @@ ScreenManager:
     EventDetailsScreen:
     AddingEventScreen:
 
+
+<RegisterScreen>:
+    name: "register"
+
+    BoxLayout:
+        padding: 10
+        spacing: 10
+        orientation: "vertical"
+        MDLabel:
+            halign: "center"
+            text: "Регистрация"
+            size_hint: 1, None
+            height: 100
+
+        MDTextField:
+            id: email_input
+            hint_text: "эл. почта"
+
+        MDTextField:
+            id: first_name_input
+            hint_text: "Имя"
+
+        MDTextField:
+            id: last_name_input
+            hint_text: "Фамилия"
+
+        MDTextField:
+            id: password_input
+            hint_text: "Пароль"
+
+        MDTextField:
+            id: password_repeat_input
+            hint_text: "Повторить пароль"
+
+        MDLabel:
+            id: out_reg
+            halign: "center"
+
+        MDFillRoundFlatButton:
+            text: "Зарегестрироваться"
+            pos_hint: {"center_x": .5}
+            on_release: app.register()
+
+        MDTextButton:
+            text: "Войти"
+            pos_hint: {"center_x": .5}
+            on_release: app.root.current = "login"
+
+        MDLabel:
+
+            size_hint: 1, None
+            height: 80
+
+
+<LoginScreen>:
+    name: "login"
+    BoxLayout:
+        padding: 10
+        spacing: 10
+        orientation: "vertical"
+        MDLabel:
+            halign: "center"
+            text: "Регистрация"
+            size_hint: 1, None
+            height: 100
+
+        MDTextField:
+            id: email_input
+            hint_text: "эл. почта"
+
+        MDTextField:
+            id: password_input
+            hint_text: "Пароль"
+
+        MDLabel:
+            id: out_log
+            halign: "center"
+
+        MDFillRoundFlatButton:
+            text: "Войти"
+            pos_hint: {"center_x": .5}
+            on_release: app.login()
+
+        MDTextButton:
+            text: "Зарегестрироваться"
+            pos_hint: {"center_x": .5}
+            on_release: app.root.current = "register"
+
+        MDLabel:
+            size_hint: 1, None
+            height: 80
 
 <MainScreen>:
     name: "main"
@@ -190,14 +283,14 @@ ScreenManager:
                 pos: self.pos
                 size: self.size
 
+
+
         MDBoxLayout:
             spacing: 120
             orientation: "horizontal"
             pos_hint: {"top": 1, "left": 1}
             size_hint: 1, None
             height: 100
-
-
 
             canvas:
                 Color:
@@ -214,19 +307,14 @@ ScreenManager:
                 size: 0, 0
 
             MDLabel:
-                text: app.user_name
+                id: username_label
                 font_size: 32
                 pos_hint: {"top": 1}
 
 
         MDLabel:
-            text: "email: " + app.email
+            id: email_label
             font_size: 16
-            size_hint: None, None
-            size: 500, 10
-
-        MDLabel:
-            text: "password: " + app.password
             size_hint: None, None
             size: 500, 10
 
@@ -248,13 +336,29 @@ ScreenManager:
         MDTextButton:
             markup: True
             text: "[b][color=#f5a50a]—[/color] Выйти[/b]"
-            on_release: app.root.current = "main"
+            on_release: app.logout()
 
         MDTextButton:
             markup: True
             text: "[b][color=#b80af5]—[/color] Помощь[/b]"
 
         MDLabel:
+        FloatLayout:
+            size_hint: 1, None
+            height: 70
+            Button:
+                pos_hint: {"center_y": .5, "left": 1}
+                size_hint: None, None
+                size: 100, 50
+                on_release: app.root.current = "main"
+                background_color: 0,0,0,0
+
+                Image:
+                    source: app.back_icon
+                    center_x: self.parent.center_x
+                    center_y: self.parent.center_y
+                    size_hint: None, None
+                    size: 70, 70
 
 
 <EventsListScreen>:

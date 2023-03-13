@@ -16,6 +16,7 @@ import datetime
 from kivy.clock import Clock
 import pickle
 import backend
+import os
 
 
 class Task_reminder(NamedTuple):
@@ -34,6 +35,13 @@ class Event(NamedTuple):
     time_end: str
     type: str
     location: str
+
+class RegisterScreen(Screen):
+    pass
+
+
+class LoginScreen(Screen):
+    pass
 
 
 class MainScreen(Screen):
@@ -122,10 +130,10 @@ class MyApp(MDApp):
         event_list.ids.events_list_layout.clear_widgets()
 
         events = []
-        for event in backend.get_events():
+        for event in backend.get_events(event_type, self.current_location):
             events.append(Event(event[0], event[1], event[2], event[3], event[4], event[5], event[6]))
         for event in events:
-            if event_type == event.type and int(self.begin_date_of_events.split('.')[2]) <= int(
+            if int(self.begin_date_of_events.split('.')[2]) <= int(
                     event.date.split('.')[2]) <= \
                     int(self.end_date_of_event.split('.')[2]) and self.current_location == event.location:
                 if (int(self.begin_date_of_events.split('.')[2]) == int(event.date.split('.')[2]) and (
@@ -256,6 +264,8 @@ class MyApp(MDApp):
         self.theme_cls.theme_style = "Light"
         self.theme_cls.primary_palette = "Amber"
 
+        self.sm.add_widget(RegisterScreen(name="register"))
+        self.sm.add_widget(LoginScreen(name="login"))
         self.sm.add_widget(MainScreen(name="main"))
         self.sm.add_widget(AccountScreen(name="account"))
         self.sm.add_widget(EventsScreen(name="events"))
@@ -270,6 +280,7 @@ class MyApp(MDApp):
 
     def on_start(self, **kwargs):
         self.filter_tasks("@")
+        self.init_login()
 
     def buy_subscription(self):
         if self.paid_subscriber:
@@ -590,7 +601,68 @@ class MyApp(MDApp):
         app = MDApp.get_running_app()
         events = app.root.get_screen('events')
         self.current_location = events.ids.location_spinner.text
-        print("cool")
+
+    def register(self):
+        app = MDApp.get_running_app()
+        reg = app.root.get_screen('register')
+        email = reg.ids.email_input.text
+        first_name = reg.ids.first_name_input.text
+        last_name = reg.ids.last_name_input.text
+        password = reg.ids.password_input.text
+        password_rep = reg.ids.password_repeat_input.text
+        if not password_rep == password:
+            reg.ids.out_reg.text = "пароли не совпадают"
+        else:
+            handler = backend.regestration(first_name, last_name, email, password)
+            if handler == 1:
+                self.sm.current = "main"
+                self.save_login_data(email, password)
+                account = app.root.get_screen('account')
+                account.ids.username_label.text = f"{first_name}\n{last_name}"
+                account.ids.email_label.text = f"email: {email}"
+            elif handler == 0:
+                reg.ids.out_reg.text = "эта электронная почта занята"
+            elif handler == -1:
+                reg.ids.out_reg.text = "ошибка соединения"
+
+    def login(self):
+        app = MDApp.get_running_app()
+        log = app.root.get_screen('login')
+        email = log.ids.email_input.text
+        password = log.ids.password_input.text
+        handler = backend.log_in(email, password)
+        if handler[0] == 2:
+            self.sm.current = "main"
+            self.save_login_data(email, password)
+            account = app.root.get_screen('account')
+            account.ids.username_label.text = f"{handler[1]}\n{handler[2]}"
+            account.ids.email_label.text = f"email: {email}"
+
+        elif handler[0] == 1:
+            log.ids.out_log.text = "неверный пароль"
+        elif handler[0] == 0:
+            log.ids.out_log.text = "эта почта не зарегестрированна"
+        elif handler[0] == -1:
+            log.ids.out_log.text = "ошибка соединения"
+
+    def save_login_data(self, email, password):
+        with open("login_data.pickle", "wb") as f:
+            pickle.dump([email, password], f, 5)
+
+    def init_login(self):
+        try:
+            with open("login_data.pickle", "rb") as f:
+                log_data = pickle.load(f)
+            handler = backend.log_in(log_data[0], log_data[1])
+            if handler[0] == 2:
+                self.sm.current = "main"
+        except:
+            pass
+
+    def logout(self):
+        os.remove("login_data.pickle")
+        self.sm.current = "register"
+
 
 
 MyApp().run()
