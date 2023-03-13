@@ -663,6 +663,13 @@ ScreenManager:
             cols: 1
             spacing: 10
             Spinner:
+                id: event_create_type
+                text: "Тип мероприятия"
+                pos_hint: {"top": 1, "center_x": .5}
+                size_hint: None, None
+                size: 100, 50
+                values: app.event_types
+            Spinner:
                 id: event_create_location
                 text: "Город"
                 pos_hint: {"top": 1, "center_x": .5}

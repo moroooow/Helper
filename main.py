@@ -15,6 +15,7 @@ import pandas as pd
 import datetime
 from kivy.clock import Clock
 import pickle
+import backend
 
 
 class Task_reminder(NamedTuple):
@@ -76,6 +77,7 @@ class MyApp(MDApp):
     email = "example@gmail.com"
     password = "********"
     cities = ["Омск", "Москва", "Краснодар"]
+    event_types = ["recreation", "sport", "concerts"]
     begin_date_of_events = f"{pd.datetime.now().day}.{pd.datetime.now().month}.{pd.datetime.now().year}"
     end_date_of_event = f"{pd.datetime.now().day + 7}.{pd.datetime.now().month}.{pd.datetime.now().year}"
     dates_of_events = f"{begin_date_of_events}-{end_date_of_event}"
@@ -130,29 +132,11 @@ class MyApp(MDApp):
                 if (int(self.begin_date_of_events.split('.')[2]) == int(event.date.split('.')[2]) and (
                         int(self.begin_date_of_events.split('.')[1]) > int(event.date.split('.')[1]) or (
                         int(self.begin_date_of_events.split('.')[0]) > int(event.date.split('.')[0]) and int(
-                    self.begin_date_of_events.split('.')[1]) == int(event.date.split('.')[1])))) or (int(
-                    self.end_date_of_event.split('.')[2]) == int(event.date.split('.')[2]) and (
-                                                                                                             int(
-                                                                                                                 self.end_date_of_event.split(
-                                                                                                                     '.')[
-                                                                                                                     1]) < int(
-                                                                                                         event.date.split(
-                                                                                                             '.')[
-                                                                                                             1]) or (
-                                                                                                                     int(
-                                                                                                                         self.end_date_of_event.split(
-                                                                                                                             '.')[
-                                                                                                                             0]) < int(
-                                                                                                                 event.date.split(
-                                                                                                                     '.')[
-                                                                                                                     0]) and (
-                                                                                                                             int(
-                                                                                                                                 self.end_date_of_event.split(
-                                                                                                                                     '.')[
-                                                                                                                                     1]) == int(
-                                                                                                                         event.date.split(
-                                                                                                                             '.')[
-                                                                                                                             1]))))):
+                        self.begin_date_of_events.split('.')[1]) == int(event.date.split('.')[1])))) or (int(
+                        self.end_date_of_event.split('.')[2]) == int(event.date.split('.')[2]) and
+                        (int(self.end_date_of_event.split('.')[1]) < int(event.date.split('.')[1]) or
+                         (int(self.end_date_of_event.split('.')[0]) < int(event.date.split('.')[0]) and
+                          (int(self.end_date_of_event.split('.')[1]) == int(event.date.split('.')[1]))))):
                     pass
                 else:
                     ev_box = MDCard(elevation=10,
@@ -335,15 +319,18 @@ class MyApp(MDApp):
     def submit_event(self):
         app = MDApp.get_running_app()
         addingevent = app.root.get_screen('addingevent')
-        self.submited_event_header = addingevent.ids.event_create_header.text
-        self.submited_event_description = addingevent.ids.event_create_description.text
-        self.submited_event_location = addingevent.ids.event_create_location.text
+        event_title = addingevent.ids.event_create_header.text
+        event_description = addingevent.ids.event_create_description.text
+        event_location = addingevent.ids.event_create_location.text
+        event_type = addingevent.ids.event_create_type.text
+
         addingevent.ids.event_create_header.text = ""
         addingevent.ids.event_create_description.text = ""
         addingevent.ids.to_time_event.text = "до"
         addingevent.ids.from_time_event.text = "c"
         addingevent.ids.date_of_event.text = "дата"
         self.sm.current = "main"
+        backend.submit_event(event_title, event_description, self.date_event, self.begining_time_event, self.ending_time_event, event_type, event_location)
 
     def chose_date(self):
         date_dialog = MDDatePicker(year=int(pd.datetime.now().year), month=int(pd.datetime.now().month),
@@ -557,6 +544,7 @@ class MyApp(MDApp):
         self.tasks_reminders.remove(task)
         self.save_tasks()
         self.dialog.dismiss()
+        self.filter_tasks(self.current_filter)
 
     def delete_for_the_day(self, task, args):
         self.tasks_reminders.remove(task)
