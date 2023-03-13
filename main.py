@@ -82,11 +82,6 @@ class MyApp(MDApp):
     end_date_of_event = f"{pd.datetime.now().day + 7}.{pd.datetime.now().month}.{pd.datetime.now().year}"
     dates_of_events = f"{begin_date_of_events}-{end_date_of_event}"
     event_layout_width = 840
-    events = [
-        Event("Фестиваль \"большие огурцы\"", "test большие огурцы", "23.12.2004", "12:30", "13:00", "recreation",
-              "Омск"),
-        Event("Цирк клоунов", "test Цирк клоунов", "23.12.2004", "12:30", "13:00", "sport", "Москва"),
-        Event("Парад кринжа", "test Парад кринжа", "23.12.2004", "12:30", "13:00", "concerts", "Краснодар")]
     task_types = ["учёба", "работа", "хобби", "покупки", "другое"]
     tasks_reminders = []
     date_of_list = pd.datetime.now().date()
@@ -125,7 +120,11 @@ class MyApp(MDApp):
         app = MDApp.get_running_app()
         event_list = app.root.get_screen('eventlist')
         event_list.ids.events_list_layout.clear_widgets()
-        for event in self.events:
+
+        events = []
+        for event in backend.get_events():
+            events.append(Event(event[0], event[1], event[2], event[3], event[4], event[5], event[6]))
+        for event in events:
             if event_type == event.type and int(self.begin_date_of_events.split('.')[2]) <= int(
                     event.date.split('.')[2]) <= \
                     int(self.end_date_of_event.split('.')[2]) and self.current_location == event.location:
