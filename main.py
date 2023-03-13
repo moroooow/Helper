@@ -8,11 +8,13 @@ from kivymd.uix.dialog import MDDialog
 from kivy.uix.button import Button
 from functools import partial
 from kivymd.uix.picker import MDTimePicker, MDDatePicker
+from kivy.uix.image import Image
 from kivymd.uix.selectioncontrol import MDCheckbox
 from typing import NamedTuple
 import pandas as pd
 import datetime
 from kivy.clock import Clock
+import pickle
 
 
 class Task_reminder(NamedTuple):
@@ -30,6 +32,7 @@ class Event(NamedTuple):
     time_begin: str
     time_end: str
     type: str
+    location: str
 
 
 class MainScreen(Screen):
@@ -72,13 +75,16 @@ class MyApp(MDApp):
     user_name = "Наталья\nПень"
     email = "example@gmail.com"
     password = "********"
-    cities = ["city_1", "city_2", "city_3", "city_4", "city_5", "city_6", "city_7", "city_8"]
-    dates_of_events = "31.01-03.03"
+    cities = ["Омск", "Москва", "Краснодар"]
+    begin_date_of_events = f"{pd.datetime.now().day}.{pd.datetime.now().month}.{pd.datetime.now().year}"
+    end_date_of_event = f"{pd.datetime.now().day + 7}.{pd.datetime.now().month}.{pd.datetime.now().year}"
+    dates_of_events = f"{begin_date_of_events}-{end_date_of_event}"
     event_layout_width = 840
     events = [
-        Event("Фестиваль \"большие огурцы\"", "test большие огурцы", "2022-12-23", "12:30", "13:00", "recreation"),
-        Event("Цирк клоунов", "test Цирк клоунов", "2022-12-23", "12:30", "13:00", "sport"),
-        Event("Парад кринжа", "test Парад кринжа", "2022-12-23", "12:30", "13:00", "concerts")]
+        Event("Фестиваль \"большие огурцы\"", "test большие огурцы", "23.12.2004", "12:30", "13:00", "recreation",
+              "Омск"),
+        Event("Цирк клоунов", "test Цирк клоунов", "23.12.2004", "12:30", "13:00", "sport", "Москва"),
+        Event("Парад кринжа", "test Парад кринжа", "23.12.2004", "12:30", "13:00", "concerts", "Краснодар")]
     task_types = ["учёба", "работа", "хобби", "покупки", "другое"]
     tasks_reminders = []
     date_of_list = pd.datetime.now().date()
@@ -97,35 +103,71 @@ class MyApp(MDApp):
     pen_filter_icon = "images/pen_filter_icon.PNG"
     hobby_filter_icon = "images/hobby_filter_icon.PNG"
     reset_filter_icon = "images/reset_filter_icon.PNG"
+    bin_mode_icon = "images/bin_mode_icon.PNG"
+    bin_icon = "images/bin_icon.PNG"
     current_task_time = ""
     current_task_begin = ""
     current_event = None
     current_filter = "@"
+    current_event_type = ""
+    current_location = ""
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.sm = ScreenManager(transition=NoTransition())
+        self.load_tasks()
         self.screen = Builder.load_file("kivymd.kv")
 
     def set_events_in_list(self, event_type):
+        self.current_event_type = event_type
         app = MDApp.get_running_app()
         event_list = app.root.get_screen('eventlist')
         event_list.ids.events_list_layout.clear_widgets()
         for event in self.events:
-            if event_type == event.type:
-                ev_box = MDCard(elevation=10,
-                                size_hint=(1, None),
-                                height=100,
-                                radius=10,
-                                padding=10,
-                                orientation="horizontal")
-                ev_box.add_widget(MDLabel(
-                    text=f"{event.title}\n[size=12]{event.date} \nc{event.time_begin} до{event.time_end}[/size]",
-                    markup=True))
-                ev_box.add_widget(MDFillRoundFlatButton(text="подробнее..."))
-                buttoncallback = partial(self.show_event_details, event)
-                ev_box.bind(on_release=buttoncallback)
-                event_list.ids.events_list_layout.add_widget(ev_box)
+            if event_type == event.type and int(self.begin_date_of_events.split('.')[2]) <= int(
+                    event.date.split('.')[2]) <= \
+                    int(self.end_date_of_event.split('.')[2]) and self.current_location == event.location:
+                if (int(self.begin_date_of_events.split('.')[2]) == int(event.date.split('.')[2]) and (
+                        int(self.begin_date_of_events.split('.')[1]) > int(event.date.split('.')[1]) or (
+                        int(self.begin_date_of_events.split('.')[0]) > int(event.date.split('.')[0]) and int(
+                    self.begin_date_of_events.split('.')[1]) == int(event.date.split('.')[1])))) or (int(
+                    self.end_date_of_event.split('.')[2]) == int(event.date.split('.')[2]) and (
+                                                                                                             int(
+                                                                                                                 self.end_date_of_event.split(
+                                                                                                                     '.')[
+                                                                                                                     1]) < int(
+                                                                                                         event.date.split(
+                                                                                                             '.')[
+                                                                                                             1]) or (
+                                                                                                                     int(
+                                                                                                                         self.end_date_of_event.split(
+                                                                                                                             '.')[
+                                                                                                                             0]) < int(
+                                                                                                                 event.date.split(
+                                                                                                                     '.')[
+                                                                                                                     0]) and (
+                                                                                                                             int(
+                                                                                                                                 self.end_date_of_event.split(
+                                                                                                                                     '.')[
+                                                                                                                                     1]) == int(
+                                                                                                                         event.date.split(
+                                                                                                                             '.')[
+                                                                                                                             1]))))):
+                    pass
+                else:
+                    ev_box = MDCard(elevation=10,
+                                    size_hint=(1, None),
+                                    height=100,
+                                    radius=10,
+                                    padding=10,
+                                    orientation="horizontal")
+                    ev_box.add_widget(MDLabel(
+                        text=f"{event.title}\n[size=12]{event.date} \nc{event.time_begin} до{event.time_end}[/size]",
+                        markup=True))
+                    ev_box.add_widget(MDFillRoundFlatButton(text="подробнее..."))
+                    buttoncallback = partial(self.show_event_details, event)
+                    ev_box.bind(on_release=buttoncallback)
+                    event_list.ids.events_list_layout.add_widget(ev_box)
 
     def show_event_details(self, event, instance):
         self.sm.current = "eventdetails"
@@ -176,6 +218,7 @@ class MyApp(MDApp):
             self.tasks_reminders.append(
                 Task_reminder(addingtask.ids.task_input.text, addingtask.ids.type_spinner.text, self.begining_time,
                               self.ending_time, str(self.date_of_list).replace(",", "-")))
+            self.save_tasks()
         else:
             if addingtask.ids.chb_mon.active:
                 date += "0"
@@ -201,6 +244,7 @@ class MyApp(MDApp):
             self.tasks_reminders.append(
                 Task_reminder(addingtask.ids.task_input.text, addingtask.ids.type_spinner.text, self.begining_time,
                               self.ending_time, date))
+            self.save_tasks()
 
         self.sort_tasks()
         self.begining_time = ""
@@ -241,6 +285,9 @@ class MyApp(MDApp):
 
         return self.sm
 
+    def on_start(self, **kwargs):
+        self.filter_tasks("@")
+
     def buy_subscription(self):
         if self.paid_subscriber:
             app = MDApp.get_running_app()
@@ -274,7 +321,7 @@ class MyApp(MDApp):
         addingevent.ids.to_time_event.text = f'до {self.ending_time_event[:5]}'
 
     def set_event_date(self):
-        date_dialog = MDDatePicker(year=int(pd.datetime.now().year), month=int(pd.datetime.now().mounth),
+        date_dialog = MDDatePicker(year=int(pd.datetime.now().year), month=int(pd.datetime.now().month),
                                    day=int(pd.datetime.now().day))
         date_dialog.bind(on_save=self.set_date_event_complete)
         date_dialog.open()
@@ -282,7 +329,7 @@ class MyApp(MDApp):
     def set_date_event_complete(self, instance, value, date):
         app = MDApp.get_running_app()
         addingevent = app.root.get_screen('addingevent')
-        self.date_event = str(value)
+        self.date_event = str(value).split("-")[2] + "." + str(value).split("-")[1] + "." + str(value).split("-")[0]
         addingevent.ids.date_of_event.text = self.date_event
 
     def submit_event(self):
@@ -310,7 +357,8 @@ class MyApp(MDApp):
         mainscreen = app.root.get_screen('main')
         mainscreen.ids.task_bar.clear_widgets()
         for task in self.tasks_reminders:
-            if (str(self.date_of_list).replace(",", "-") in task.date or str(self.date_of_list.weekday()) in task.date) and not f"-{self.date_of_list}" in task.date:
+            if (str(self.date_of_list).replace(",", "-") in task.date or str(
+                    self.date_of_list.weekday()) in task.date) and not f"-{self.date_of_list}" in task.date:
                 task_card = MDCard(elevation=10,
                                    size_hint=(1, None),
                                    height=100,
@@ -434,6 +482,7 @@ class MyApp(MDApp):
         self.tasks_reminders.append(
             Task_reminder(self.current_event.title, self.current_event.type, self.current_event.time_begin,
                           self.current_event.time_end, self.current_event.date))
+        self.save_tasks()
         self.sort_tasks()
         self.filter_tasks("@")
 
@@ -459,8 +508,13 @@ class MyApp(MDApp):
                 if self.in_delete_mode:
                     delete_button = Button(size_hint=(None, None),
                                            size=(50, 50),
-                                           pos_hint={"center_y": .5})
+                                           pos_hint={"center_y": .5},
+                                           background_color=(0, 0, 0, 0))
                     buttoncallback = partial(self.delete_task, delete_button.parent)
+                    delete_button.add_widget(Image(source=self.bin_icon,
+                                                   size_hint=(None, None),
+                                                   pos=delete_button.pos,
+                                                   size=(60, 60)))
                     delete_button.bind(on_release=buttoncallback)
                     task_card.add_widget(delete_button)
                 else:
@@ -476,7 +530,7 @@ class MyApp(MDApp):
                     task.parent.children[1].text.split("-")[1]:
                 if str(self.date_of_list) == task_a.date:
                     self.tasks_reminders.remove(task_a)
-                    print(self.tasks_reminders)
+                    self.save_tasks()
                     break
                 elif str(self.date_of_list.weekday()) in task_a.date:
                     buttoncallback1 = partial(self.delete_completely, task_a)
@@ -501,16 +555,55 @@ class MyApp(MDApp):
 
     def delete_completely(self, task, args):
         self.tasks_reminders.remove(task)
+        self.save_tasks()
         self.dialog.dismiss()
 
     def delete_for_the_day(self, task, args):
         self.tasks_reminders.remove(task)
-        new_task = Task_reminder(task.name, task.type, task.time_begin, task.time_end, task.date + f"-{self.date_of_list}")
+        new_task = Task_reminder(task.name, task.type, task.time_begin, task.time_end,
+                                 task.date + f"-{self.date_of_list}")
         self.tasks_reminders.append(new_task)
         self.sort_tasks()
         self.filter_tasks(self.current_filter)
+        self.save_tasks()
         self.dialog.dismiss()
 
+    def save_tasks(self):
+        with open("data.pickle", "wb") as f:
+            pickle.dump(self.tasks_reminders, f, 5)
+
+    def load_tasks(self):
+        try:
+            with open("data.pickle", "rb") as f:
+                self.tasks_reminders = pickle.load(f)
+        except(EOFError):
+            pass
+
+    def set_event_date_range(self):
+        date_dialog = MDDatePicker(year=int(pd.datetime.now().year), month=int(pd.datetime.now().month),
+                                   day=int(pd.datetime.now().day), mode="range")
+        date_dialog.bind(on_save=self.set_date_event_range_complete)
+        date_dialog.open()
+
+    def set_date_event_range_complete(self, instance, value, date):
+        self.begin_date_of_events = str(date[0]).replace("-", ".").split(".")[2] + "." + \
+                                    str(date[0]).replace("-", ".").split(".")[1] + "." + \
+                                    str(date[0]).replace("-", ".").split(".")[0]
+        self.end_date_of_event = str(date[-1]).replace("-", ".").split(".")[2] + "." + \
+                                 str(date[-1]).replace("-", ".").split(".")[1] + "." + \
+                                 str(date[-1]).replace("-", ".").split(".")[0]
+
+        self.dates_of_events = f"{self.begin_date_of_events}-{self.end_date_of_event}"
+        app = MDApp.get_running_app()
+        eventlist = app.root.get_screen('eventlist')
+        eventlist.ids.date_of_events_button.text = self.dates_of_events
+        self.set_events_in_list(self.current_event_type)
+
+    def choose_location(self):
+        app = MDApp.get_running_app()
+        events = app.root.get_screen('events')
+        self.current_location = events.ids.location_spinner.text
+        print("cool")
 
 
 MyApp().run()

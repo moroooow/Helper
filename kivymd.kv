@@ -104,7 +104,14 @@ ScreenManager:
                     size_hint: None, None
                     size: 60, 60
                     pos_hint: {"center_y": .5}
+                    background_color: 0,0,0,0
                     on_release: app.enter_delete_mode()
+                    Image:
+                        source: app.bin_mode_icon
+                        size_hint: None, None
+                        center_x: self.parent.center_x
+                        center_y: self.parent.center_y
+                        size: 60, 60
 
         ScrollView:
             size_hint: 1, 1
@@ -257,26 +264,38 @@ ScreenManager:
         orientation: "vertical"
         padding: 10
 
-        FloatLayout:
+        MDCard:
+            elevation: 20
             size_hint: 1, None
             height: 70
-            Button:
-                pos_hint: {"top": 1, "left": 1}
-                size_hint: None, None
-                size: 100, 50
-                on_release: app.root.current = "events"
-                background_color: 0,0,0,0
+            FloatLayout:
 
-                Image:
-                    source: app.back_icon
-                    center_x: self.parent.center_x
-                    center_y: self.parent.center_y
+                Button:
+                    pos_hint: {"center_y": .5, "left": 1}
                     size_hint: None, None
-                    size: 70, 70
+                    size: 100, 50
+                    on_release: app.root.current = "events"
+                    background_color: 0,0,0,0
+
+                    Image:
+                        source: app.back_icon
+                        center_x: self.parent.center_x
+                        center_y: self.parent.center_y
+                        size_hint: None, None
+                        size: 70, 70
+
+                Button:
+                    id: date_of_events_button
+                    text: app.dates_of_events
+                    pos_hint: {"center_y": .5, "right": 1}
+                    size_hint: None, None
+                    size: 200, 50
+                    on_release: app.set_event_date_range()
 
         ScrollView:
             size_hint: 1, 1
             MDBoxLayout:
+                padding: 0, 10, 0, 0
                 size_hint: 1, None
                 height: self.minimum_height
                 id: events_list_layout
@@ -291,46 +310,40 @@ ScreenManager:
         orientation: "vertical"
         padding: 10
 
-        FloatLayout:
+        MDCard:
+            elevation: 20
             size_hint: 1, None
             height: 70
 
-            canvas.before:
-                Color:
-                    rgba: 0, 1, 0, .5
-                Rectangle:
-                    pos: self.pos
-                    size: self.size
+            FloatLayout:
 
-            Button:
-                pos_hint: {"top": 1, "left": 1}
-                size_hint: None, None
-                size: 100, 50
-                on_release: app.root.current = "main"
-                background_color: 0,0,0,0
-
-                Image:
-                    source: app.back_icon
-                    center_x: self.parent.center_x
-                    center_y: self.parent.center_y
+                Button:
+                    pos_hint: {"center_y": .5, "left": 1}
                     size_hint: None, None
-                    size: 70, 70
+                    size: 100, 50
+                    on_release: app.root.current = "main"
+                    background_color: 0,0,0,0
 
-            Spinner:
-                text: "Город"
-                pos_hint: {"top": 1, "center_x": .5}
-                size_hint: None, None
-                size: 100, 50
-                values: app.cities
+                    Image:
+                        source: app.back_icon
+                        center_x: self.parent.center_x
+                        center_y: self.parent.center_y
+                        size_hint: None, None
+                        size: 70, 70
 
-            Button:
-                text: app.dates_of_events
-                pos_hint: {"top": 1, "right": 1}
-                size_hint: None, None
-                size: 100, 50
+                Spinner:
+                    id: location_spinner
+                    text: "Город"
+                    pos_hint: {"center_y": .5, "right": 1}
+                    size_hint: None, None
+                    size: 100, 50
+                    values: app.cities
+                    on_text: app.choose_location()
+
         ScrollView:
             size_hint: 1, 1
             FloatLayout:
+
                 size_hint: 1, None
                 height: app.event_layout_width
 
@@ -340,12 +353,7 @@ ScreenManager:
                     width: 310
                     pos_hint: {"center_x": .5, "top": 1}
                     spacing: 10
-                    canvas.before:
-                        Color:
-                            rgba: 1, 0, 0, .5
-                        Rectangle:
-                            pos: self.pos
-                            size: self.size
+                    padding: 0, 10, 0, 0
 
                     EventCard:
                         BoxLayout:
@@ -391,23 +399,29 @@ ScreenManager:
         orientation: "vertical"
         padding: 10
 
-        FloatLayout:
+        MDCard:
+            elevation: 20
             size_hint: 1, None
             height: 70
 
-            Button:
-                pos_hint: {"top": 1, "left": 1}
-                size_hint: None, None
-                size: 100, 50
-                on_release: app.root.current = "eventlist"
-                background_color: 0,0,0,0
+            FloatLayout:
+                size_hint: 1, None
+                height: 70
 
-                Image:
-                    source: app.back_icon
-                    center_x: self.parent.center_x
-                    center_y: self.parent.center_y
+                Button:
+                    pos_hint: {"center_y": .5, "left": 1}
                     size_hint: None, None
-                    size: 70, 70
+                    size: 100, 50
+                    on_release: app.root.current = "eventlist"
+                    background_color: 0,0,0,0
+
+                    Image:
+                        source: app.back_icon
+                        center_x: self.parent.center_x
+                        center_y: self.parent.center_y
+                        size_hint: None, None
+                        size: 70, 70
+
         ScrollView:
             BoxLayout:
                 orientation: "vertical"
