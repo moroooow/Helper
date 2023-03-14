@@ -24,7 +24,7 @@ def create_event(conn, title, description, date, time_begin, time_end, type, loc
         conn.commit()
         cursor.close()
     except Error as db_connection_error:
-        return ("Возникла ошибка: ", db_connection_error)
+        return "Возникла ошибка: ", db_connection_error
     return True
 
 
@@ -35,8 +35,9 @@ def get_events(event_type, location):
         cursor = conn.cursor()
         get_event_query = f"""SELECT * FROM events WHERE location = "{location}" AND type = "{event_type}" """
         cursor.execute(get_event_query)
+        events = cursor.fetchall()
         cursor.close()
-        return cursor.fetchall()
+        return events
     except Error as db_connection_error:
         print("Возникла ошибка: ", db_connection_error)
 
@@ -59,16 +60,19 @@ def regestration(first_name, last_name, email, password):
         check_email_query = f"""SELECT * FROM users WHERE email = "{email}" """
         cursor.execute(check_email_query)
         if len(cursor.fetchall()) == 0:
-            registration_query = f"""INSERT INTO users (first_name, last_name, email, password) VALUES ('{first_name}', '{last_name}', '{email}', '{password}')"""
+            registration_query = f"""INSERT INTO users (first_name, last_name, email, is_paid, password) VALUES ('{first_name}', '{last_name}', '{email}', 0, '{password}')"""
             cursor.execute(registration_query)
             conn.commit()
+            get_id_query = f"""SELECT user_id FROM users WHERE email = "{email}" """
+            cursor.execute(get_id_query)
+            id = cursor.fetchone()
             cursor.close()
-            return 1
+            return [1, id]
         else:
-            return 0
+            return [0]
 
     except Error as db_connection_error:
-        return -1
+        return [-1]
 
 
 def log_in(email, password):
@@ -80,7 +84,6 @@ def log_in(email, password):
         cursor.execute(check_email_query)
         users = cursor.fetchall()
         if len(users) == 1:
-            print(str(users[0]).split("""'""")[1])
             if str(users[0]).split("""'""")[1] == password:
                 get_first_name_query = f"""SELECT first_name FROM users WHERE email = "{email}" """
                 cursor.execute(get_first_name_query)
@@ -88,10 +91,98 @@ def log_in(email, password):
                 get_first_name_query = f"""SELECT last_name FROM users WHERE email = "{email}" """
                 cursor.execute(get_first_name_query)
                 last_name = str(cursor.fetchone()).split("""'""")[1]
+                get_is_paid_query = f"""SELECT is_paid FROM users WHERE email = "{email}" """
+                cursor.execute(get_is_paid_query)
+                is_paid = cursor.fetchone()
+                get_id_query = f"""SELECT user_id FROM users WHERE email = "{email}" """
+                cursor.execute(get_id_query)
+                id = cursor.fetchone()
+                cursor.close()
 
-                return [2, first_name, last_name]
+                return [2, first_name, last_name, is_paid[0], id[0]]
             else:
                 return [1]
         return [0]
     except Error as db_connection_error:
         return [-1]
+
+
+def set_paid(email):
+    try:
+        conn = create_connection_mysql_db(db_host="localhost", username="root", user_password="Portakal93",
+                                          db_name="testdb")
+        cursor = conn.cursor()
+        pay_query = f"""UPDATE users SET is_paid =1 WHERE email = "{email}" """
+        cursor.execute(pay_query)
+        conn.commit()
+        cursor.close()
+
+        return 1
+    except Error as db_connection_error:
+        return -1
+
+
+def upload_tasks(title, type, time_begin, time_end, date, user_id):
+    try:
+        conn = create_connection_mysql_db(db_host="localhost", username="root", user_password="Portakal93",
+                                          db_name="testdb")
+        cursor = conn.cursor()
+        tasks_query = f"""INSERT INTO tasks (title, type, time_begin, time_end, date, user_id) VALUES ('{title}', '{type}', '{time_begin}', '{time_end}', '{date}', '{user_id}')"""
+        cursor.execute(tasks_query)
+        conn.commit()
+        get_id_query = f"""SELECT task_id FROM tasks WHERE user_id = {user_id}"""
+        cursor.execute(get_id_query)
+        id = cursor.fetchone()
+        cursor.close()
+
+        return [1, id[0]]
+    except Error as db_connection_error:
+        return [-1]
+
+
+def change_task_date(id, date):
+    try:
+        conn = create_connection_mysql_db(db_host="localhost", username="root", user_password="Portakal93",
+                                          db_name="testdb")
+        cursor = conn.cursor()
+        change_query = f"""UPDATE tasks SET date = "{date}" WHERE task_id = {id} """
+        cursor.execute(change_query)
+        conn.commit()
+        cursor.close()
+
+        return 1
+    except Error as db_connection_error:
+        return -1
+
+
+def delete_task(task_id):
+    try:
+
+        conn = create_connection_mysql_db(db_host="localhost", username="root", user_password="Portakal93",
+                                          db_name="testdb")
+        cursor = conn.cursor()
+        delete_query = f"""DELETE FROM tasks WHERE task_id = {task_id}"""
+        cursor.execute(delete_query)
+        conn.commit()
+        cursor.close()
+        print(task_id)
+
+        return 1
+    except Error as db_connection_error:
+        return print("Возникла ошибка: ", db_connection_error)
+
+
+def get_tasks(user_id):
+    try:
+        conn = create_connection_mysql_db(db_host="localhost", username="root", user_password="Portakal93",
+                                          db_name="testdb")
+        cursor = conn.cursor()
+        delete_query = f"""SELECT * FROM tasks WHERE user_id = {user_id}"""
+        cursor.execute(delete_query)
+        tasks = cursor.fetchall()
+        print(tasks)
+        cursor.close()
+
+        return tasks
+    except Error as db_connection_error:
+        return -1

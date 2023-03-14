@@ -25,6 +25,8 @@ class Task_reminder(NamedTuple):
     time_begin: str
     time_end: str
     date: str
+    uploaded: bool
+    id: int
 
 
 class Event(NamedTuple):
@@ -35,6 +37,7 @@ class Event(NamedTuple):
     time_end: str
     type: str
     location: str
+
 
 class RegisterScreen(Screen):
     pass
@@ -81,9 +84,8 @@ class MyApp(MDApp):
     recreation_event_img = "images/recreation_events.PNG"
     concerts_event_img = "images/concerts_events.PNG"
     sports_event_img = "images/sport_events.PNG"
-    user_name = "Наталья\nПень"
-    email = "example@gmail.com"
-    password = "********"
+    user_name = "Аноним"
+    email = ""
     cities = ["Омск", "Москва", "Краснодар"]
     event_types = ["recreation", "sport", "concerts"]
     begin_date_of_events = f"{pd.datetime.now().day}.{pd.datetime.now().month}.{pd.datetime.now().year}"
@@ -94,7 +96,7 @@ class MyApp(MDApp):
     tasks_reminders = []
     date_of_list = pd.datetime.now().date()
     current_time = str(datetime.datetime.now().time())
-    paid_subscriber = True
+    paid_subscriber = False
     in_delete_mode = False
     add_task_icon = "images/add_task_icon.PNG"
     calendar_icon = "images/calendar.PNG"
@@ -116,6 +118,7 @@ class MyApp(MDApp):
     current_filter = "@"
     current_event_type = ""
     current_location = ""
+    user_id = -1
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -130,8 +133,11 @@ class MyApp(MDApp):
         event_list.ids.events_list_layout.clear_widgets()
 
         events = []
-        for event in backend.get_events(event_type, self.current_location):
-            events.append(Event(event[0], event[1], event[2], event[3], event[4], event[5], event[6]))
+        try:
+            for event in backend.get_events(event_type, self.current_location):
+                events.append(Event(event[0], event[1], event[2], event[3], event[4], event[5], event[6]))
+        except TypeError:
+            pass
         for event in events:
             if int(self.begin_date_of_events.split('.')[2]) <= int(
                     event.date.split('.')[2]) <= \
@@ -139,11 +145,28 @@ class MyApp(MDApp):
                 if (int(self.begin_date_of_events.split('.')[2]) == int(event.date.split('.')[2]) and (
                         int(self.begin_date_of_events.split('.')[1]) > int(event.date.split('.')[1]) or (
                         int(self.begin_date_of_events.split('.')[0]) > int(event.date.split('.')[0]) and int(
-                        self.begin_date_of_events.split('.')[1]) == int(event.date.split('.')[1])))) or (int(
-                        self.end_date_of_event.split('.')[2]) == int(event.date.split('.')[2]) and
-                        (int(self.end_date_of_event.split('.')[1]) < int(event.date.split('.')[1]) or
-                         (int(self.end_date_of_event.split('.')[0]) < int(event.date.split('.')[0]) and
-                          (int(self.end_date_of_event.split('.')[1]) == int(event.date.split('.')[1]))))):
+                    self.begin_date_of_events.split('.')[1]) == int(event.date.split('.')[1])))) or (int(
+                    self.end_date_of_event.split('.')[2]) == int(event.date.split('.')[2]) and
+                                                                                                     (int(
+                                                                                                         self.end_date_of_event.split(
+                                                                                                             '.')[
+                                                                                                             1]) < int(
+                                                                                                         event.date.split(
+                                                                                                             '.')[1]) or
+                                                                                                      (int(
+                                                                                                          self.end_date_of_event.split(
+                                                                                                              '.')[
+                                                                                                              0]) < int(
+                                                                                                          event.date.split(
+                                                                                                              '.')[
+                                                                                                              0]) and
+                                                                                                       (int(
+                                                                                                           self.end_date_of_event.split(
+                                                                                                               '.')[
+                                                                                                               1]) == int(
+                                                                                                           event.date.split(
+                                                                                                               '.')[
+                                                                                                               1]))))):
                     pass
                 else:
                     ev_box = MDCard(elevation=10,
@@ -208,7 +231,13 @@ class MyApp(MDApp):
         if addingtask.ids.chb_once.active:
             self.tasks_reminders.append(
                 Task_reminder(addingtask.ids.task_input.text, addingtask.ids.type_spinner.text, self.begining_time,
-                              self.ending_time, str(self.date_of_list).replace(",", "-")))
+                              self.ending_time, str(self.date_of_list).replace(",", "-"), False, -1))
+            handler = self.upload_tasks(self.tasks_reminders[-1])
+            if handler[0] == 1:
+                o_t = self.tasks_reminders[-1]
+                new_task = Task_reminder(o_t.name, o_t.type, o_t.time_begin, o_t.time_end, o_t.date, True, handler[1])
+                self.tasks_reminders.remove(self.tasks_reminders[-1])
+                self.tasks_reminders.append(new_task)
             self.save_tasks()
         else:
             if addingtask.ids.chb_mon.active:
@@ -234,7 +263,14 @@ class MyApp(MDApp):
 
             self.tasks_reminders.append(
                 Task_reminder(addingtask.ids.task_input.text, addingtask.ids.type_spinner.text, self.begining_time,
-                              self.ending_time, date))
+                              self.ending_time, date, False, -1))
+
+            handler = self.upload_tasks(self.tasks_reminders[-1])
+            if handler[0] == 1:
+                o_t = self.tasks_reminders[-1]
+                new_task = Task_reminder(o_t.name, o_t.type, o_t.time_begin, o_t.time_end, o_t.date, True, handler[1])
+                self.tasks_reminders.remove(self.tasks_reminders[-1])
+                self.tasks_reminders.append(new_task)
             self.save_tasks()
 
         self.sort_tasks()
@@ -279,10 +315,36 @@ class MyApp(MDApp):
         return self.sm
 
     def on_start(self, **kwargs):
-        self.filter_tasks("@")
         self.init_login()
+        self.update_if_paid()
+        for task in self.tasks_reminders:
+            if not task.uploaded:
+                handler = self.upload_tasks(task)
+                if handler[0] == 1:
+                    self.tasks_reminders.remove(task)
+                    self.tasks_reminders.append(
+                        Task_reminder(task.name, task.type, task.time_begin, task.time_end, task.date, True,
+                                      handler[1]))
+        tasks = backend.get_tasks(self.user_id)
+        if not tasks == -1:
+            self.tasks_reminders = []
+            for task in tasks:
+                self.tasks_reminders.append(Task_reminder(task[0], task[1], task[2], task[3], task[4], True, task[6]))
+        self.save_tasks()
+        self.filter_tasks("@")
 
     def buy_subscription(self):
+        if not self.paid_subscriber:
+            app = MDApp.get_running_app()
+            accountscreen = app.root.get_screen('account')
+            addeventbutton = MDTextButton(markup=True,
+                                          text="[b][color=#f306a7]—[/color] Добавить\n  мероприятие[/b]")
+            addeventbutton.bind(on_release=self.to_create_event)
+            accountscreen.ids.account_buttons_layout.add_widget(addeventbutton, 2)
+            backend.set_paid(self.email)
+            print(self.email)
+
+    def update_if_paid(self):
         if self.paid_subscriber:
             app = MDApp.get_running_app()
             accountscreen = app.root.get_screen('account')
@@ -340,7 +402,8 @@ class MyApp(MDApp):
         addingevent.ids.from_time_event.text = "c"
         addingevent.ids.date_of_event.text = "дата"
         self.sm.current = "main"
-        backend.submit_event(event_title, event_description, self.date_event, self.begining_time_event, self.ending_time_event, event_type, event_location)
+        backend.submit_event(event_title, event_description, self.date_event, self.begining_time_event,
+                             self.ending_time_event, event_type, event_location)
 
     def chose_date(self):
         date_dialog = MDDatePicker(year=int(pd.datetime.now().year), month=int(pd.datetime.now().month),
@@ -478,7 +541,13 @@ class MyApp(MDApp):
     def add_event_to_tasks(self):
         self.tasks_reminders.append(
             Task_reminder(self.current_event.title, self.current_event.type, self.current_event.time_begin,
-                          self.current_event.time_end, self.current_event.date))
+                          self.current_event.time_end, self.current_event.date, False, -1))
+        handler = self.upload_tasks(self.tasks_reminders[-1])
+        if handler[0] == 1:
+            self.tasks_reminders.remove(self.tasks_reminders[-1])
+            self.tasks_reminders.append(
+                Task_reminder(self.current_event.title, self.current_event.type, self.current_event.time_begin,
+                              self.current_event.time_end, self.current_event.date, True, handler[1]))
         self.save_tasks()
         self.sort_tasks()
         self.filter_tasks("@")
@@ -526,8 +595,12 @@ class MyApp(MDApp):
                     task.parent.children[1].text.split("-")[0] and task_a.time_end == \
                     task.parent.children[1].text.split("-")[1]:
                 if str(self.date_of_list) == task_a.date:
+                    if task_a.uploaded:
+                        print(1)
+                        backend.delete_task(task_a.id)
                     self.tasks_reminders.remove(task_a)
                     self.save_tasks()
+
                     break
                 elif str(self.date_of_list.weekday()) in task_a.date:
                     buttoncallback1 = partial(self.delete_completely, task_a)
@@ -551,6 +624,13 @@ class MyApp(MDApp):
         self.enter_delete_mode()
 
     def delete_completely(self, task, args):
+        if task.uploaded:
+            backend.delete_task(task.id)
+        else:
+            handler = self.upload_tasks(task)
+            if handler[0] == 1:
+                backend.delete_task(task.id)
+
         self.tasks_reminders.remove(task)
         self.save_tasks()
         self.dialog.dismiss()
@@ -559,7 +639,16 @@ class MyApp(MDApp):
     def delete_for_the_day(self, task, args):
         self.tasks_reminders.remove(task)
         new_task = Task_reminder(task.name, task.type, task.time_begin, task.time_end,
-                                 task.date + f"-{self.date_of_list}")
+                                 task.date + f"-{self.date_of_list}", False, -1)
+        if not task.uploaded:
+            handler = self.upload_tasks(task)
+            if handler[0] == 1:
+                new_task = Task_reminder(task.name, task.type, task.time_begin, task.time_end,
+                                         task.date + f"-{self.date_of_list}", True, handler[1])
+        else:
+            new_task = Task_reminder(task.name, task.type, task.time_begin, task.time_end,
+                                     task.date + f"-{self.date_of_list}", True, task.id)
+        backend.change_task_date(new_task.id, new_task.date)
         self.tasks_reminders.append(new_task)
         self.sort_tasks()
         self.filter_tasks(self.current_filter)
@@ -614,15 +703,17 @@ class MyApp(MDApp):
             reg.ids.out_reg.text = "пароли не совпадают"
         else:
             handler = backend.regestration(first_name, last_name, email, password)
-            if handler == 1:
+            if handler[0] == 1:
                 self.sm.current = "main"
                 self.save_login_data(email, password)
+                self.email = email
+                self.user_id = handler[1]
                 account = app.root.get_screen('account')
                 account.ids.username_label.text = f"{first_name}\n{last_name}"
                 account.ids.email_label.text = f"email: {email}"
-            elif handler == 0:
+            elif handler[0] == 0:
                 reg.ids.out_reg.text = "эта электронная почта занята"
-            elif handler == -1:
+            elif handler[0] == -1:
                 reg.ids.out_reg.text = "ошибка соединения"
 
     def login(self):
@@ -634,9 +725,12 @@ class MyApp(MDApp):
         if handler[0] == 2:
             self.sm.current = "main"
             self.save_login_data(email, password)
+            self.email = email
             account = app.root.get_screen('account')
             account.ids.username_label.text = f"{handler[1]}\n{handler[2]}"
             account.ids.email_label.text = f"email: {email}"
+            self.paid_subscriber = handler[3]
+            self.user_id = handler[4]
 
         elif handler[0] == 1:
             log.ids.out_log.text = "неверный пароль"
@@ -655,14 +749,25 @@ class MyApp(MDApp):
                 log_data = pickle.load(f)
             handler = backend.log_in(log_data[0], log_data[1])
             if handler[0] == 2:
+                app = MDApp.get_running_app()
                 self.sm.current = "main"
+                account = app.root.get_screen('account')
+                self.email = log_data[0]
+                self.user_id = handler[4]
+                account.ids.username_label.text = f"{handler[1]}\n{handler[2]}"
+                account.ids.email_label.text = f"email: {log_data[0]}"
+                self.paid_subscriber = handler[3]
         except:
             pass
 
     def logout(self):
         os.remove("login_data.pickle")
         self.sm.current = "register"
+        with open("data.pickle", "wb") as f:
+            pickle.dump("", f)
 
+    def upload_tasks(self, task):
+        return backend.upload_tasks(task.name, task.type, task.time_begin, task.time_end, task.date, self.user_id)
 
 
 MyApp().run()
