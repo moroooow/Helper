@@ -292,7 +292,7 @@ class MyApp(MDApp):
                                              size_hint=(None, 1),
                                              width=100))
                 task_card.add_widget(MDCheckbox(size_hint=(None, None),
-                                                size=(50, 50),
+                                                size=(70, 70),
                                                 pos_hint={"center_y": .5}))
                 mainscreen.ids.task_bar.add_widget(task_card)
 
@@ -431,7 +431,7 @@ class MyApp(MDApp):
                                              size_hint=(None, 1),
                                              width=100))
                 task_card.add_widget(MDCheckbox(size_hint=(None, None),
-                                                size=(50, 50),
+                                                size=(70, 70),
                                                 pos_hint={"center_y": .5}))
                 mainscreen.ids.task_bar.add_widget(task_card)
 
@@ -515,7 +515,7 @@ class MyApp(MDApp):
                                                  size_hint=(None, 1),
                                                  width=100))
                     task_card.add_widget(MDCheckbox(size_hint=(None, None),
-                                                    size=(50, 50),
+                                                    size=(70, 70),
                                                     pos_hint={"center_y": .5}))
                     mainscreen.ids.task_bar.add_widget(task_card)
         else:
@@ -534,7 +534,7 @@ class MyApp(MDApp):
                                                  size_hint=(None, 1),
                                                  width=100))
                     task_card.add_widget(MDCheckbox(size_hint=(None, None),
-                                                    size=(50, 50),
+                                                    size=(70, 70),
                                                     pos_hint={"center_y": .5}))
                     mainscreen.ids.task_bar.add_widget(task_card)
 
@@ -573,19 +573,16 @@ class MyApp(MDApp):
                                              width=100))
                 if self.in_delete_mode:
                     delete_button = Button(size_hint=(None, None),
-                                           size=(50, 50),
+                                           size=(70, 70),
                                            pos_hint={"center_y": .5},
-                                           background_color=(0, 0, 0, 0))
+                                           background_normal = self.bin_icon,
+                                           background_down = self.bin_icon)
                     buttoncallback = partial(self.delete_task, delete_button.parent)
-                    delete_button.add_widget(Image(source=self.bin_icon,
-                                                   size_hint=(None, None),
-                                                   pos=delete_button.pos,
-                                                   size=(60, 60)))
                     delete_button.bind(on_release=buttoncallback)
                     task_card.add_widget(delete_button)
                 else:
                     task_card.add_widget(MDCheckbox(size_hint=(None, None),
-                                                    size=(50, 50),
+                                                    size=(70, 70),
                                                     pos_hint={"center_y": .5}))
                 mainscreen.ids.task_bar.add_widget(task_card)
 
