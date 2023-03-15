@@ -69,10 +69,17 @@ ScreenManager:
             pos_hint: {"center_x": .5}
             on_release: app.root.current = "login"
 
+        MDFillRoundFlatButton:
+            text: "Использовать без сети"
+            pos_hint: {"center_x": .5}
+            on_release: app.use_network = False
+            on_release: app.root.current = "main"
+            background_color: (230, 230, 230, 1)
+
         MDLabel:
 
             size_hint: 1, None
-            height: 80
+            height: 10
 
 
 <LoginScreen>:
@@ -109,9 +116,16 @@ ScreenManager:
             pos_hint: {"center_x": .5}
             on_release: app.root.current = "register"
 
+        MDFillRoundFlatButton:
+            text: "Использовать без сети"
+            pos_hint: {"center_x": .5}
+            on_release: app.use_network = False
+            on_release: app.root.current = "main"
+            background_color: (230, 230, 230, 1)
+
         MDLabel:
             size_hint: 1, None
-            height: 80
+            height: 10
 
 <MainScreen>:
     name: "main"

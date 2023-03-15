@@ -8,7 +8,6 @@ from kivymd.uix.dialog import MDDialog
 from kivy.uix.button import Button
 from functools import partial
 from kivymd.uix.picker import MDTimePicker, MDDatePicker
-from kivy.uix.image import Image
 from kivymd.uix.selectioncontrol import MDCheckbox
 from typing import NamedTuple
 import pandas as pd
@@ -98,6 +97,7 @@ class MyApp(MDApp):
     current_time = str(datetime.datetime.now().time())
     paid_subscriber = False
     in_delete_mode = False
+    use_network = True
     add_task_icon = "images/add_task_icon.PNG"
     calendar_icon = "images/calendar.PNG"
     timer_icon = "images/timer_icon.PNG"
@@ -123,7 +123,6 @@ class MyApp(MDApp):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.sm = ScreenManager(transition=NoTransition())
-        self.load_tasks()
         self.screen = Builder.load_file("kivymd.kv")
 
     def set_events_in_list(self, event_type):
@@ -133,11 +132,12 @@ class MyApp(MDApp):
         event_list.ids.events_list_layout.clear_widgets()
 
         events = []
-        try:
-            for event in backend.get_events(event_type, self.current_location):
-                events.append(Event(event[0], event[1], event[2], event[3], event[4], event[5], event[6]))
-        except TypeError:
-            pass
+        if self.use_network:
+            try:
+                for event in backend.get_events(event_type, self.current_location):
+                    events.append(Event(event[0], event[1], event[2], event[3], event[4], event[5], event[6]))
+            except TypeError:
+                pass
         for event in events:
             if int(self.begin_date_of_events.split('.')[2]) <= int(
                     event.date.split('.')[2]) <= \
@@ -232,12 +232,13 @@ class MyApp(MDApp):
             self.tasks_reminders.append(
                 Task_reminder(addingtask.ids.task_input.text, addingtask.ids.type_spinner.text, self.begining_time,
                               self.ending_time, str(self.date_of_list).replace(",", "-"), False, -1))
-            handler = self.upload_tasks(self.tasks_reminders[-1])
-            if handler[0] == 1:
-                o_t = self.tasks_reminders[-1]
-                new_task = Task_reminder(o_t.name, o_t.type, o_t.time_begin, o_t.time_end, o_t.date, True, handler[1])
-                self.tasks_reminders.remove(self.tasks_reminders[-1])
-                self.tasks_reminders.append(new_task)
+            if self.use_network:
+                handler = self.upload_tasks(self.tasks_reminders[-1])
+                if handler[0] == 1:
+                    o_t = self.tasks_reminders[-1]
+                    new_task = Task_reminder(o_t.name, o_t.type, o_t.time_begin, o_t.time_end, o_t.date, True, handler[1])
+                    self.tasks_reminders.remove(self.tasks_reminders[-1])
+                    self.tasks_reminders.append(new_task)
             self.save_tasks()
         else:
             if addingtask.ids.chb_mon.active:
@@ -264,13 +265,13 @@ class MyApp(MDApp):
             self.tasks_reminders.append(
                 Task_reminder(addingtask.ids.task_input.text, addingtask.ids.type_spinner.text, self.begining_time,
                               self.ending_time, date, False, -1))
-
-            handler = self.upload_tasks(self.tasks_reminders[-1])
-            if handler[0] == 1:
-                o_t = self.tasks_reminders[-1]
-                new_task = Task_reminder(o_t.name, o_t.type, o_t.time_begin, o_t.time_end, o_t.date, True, handler[1])
-                self.tasks_reminders.remove(self.tasks_reminders[-1])
-                self.tasks_reminders.append(new_task)
+            if self.use_network:
+                handler = self.upload_tasks(self.tasks_reminders[-1])
+                if handler[0] == 1:
+                    o_t = self.tasks_reminders[-1]
+                    new_task = Task_reminder(o_t.name, o_t.type, o_t.time_begin, o_t.time_end, o_t.date, True, handler[1])
+                    self.tasks_reminders.remove(self.tasks_reminders[-1])
+                    self.tasks_reminders.append(new_task)
             self.save_tasks()
 
         self.sort_tasks()
@@ -317,24 +318,11 @@ class MyApp(MDApp):
     def on_start(self, **kwargs):
         self.init_login()
         self.update_if_paid()
-        for task in self.tasks_reminders:
-            if not task.uploaded:
-                handler = self.upload_tasks(task)
-                if handler[0] == 1:
-                    self.tasks_reminders.remove(task)
-                    self.tasks_reminders.append(
-                        Task_reminder(task.name, task.type, task.time_begin, task.time_end, task.date, True,
-                                      handler[1]))
-        tasks = backend.get_tasks(self.user_id)
-        if not tasks == -1:
-            self.tasks_reminders = []
-            for task in tasks:
-                self.tasks_reminders.append(Task_reminder(task[0], task[1], task[2], task[3], task[4], True, task[6]))
-        self.save_tasks()
+        self.tasks_reminders = self.load_tasks()
         self.filter_tasks("@")
 
     def buy_subscription(self):
-        if not self.paid_subscriber:
+        if not self.paid_subscriber and self.use_network:
             app = MDApp.get_running_app()
             accountscreen = app.root.get_screen('account')
             addeventbutton = MDTextButton(markup=True,
@@ -389,21 +377,22 @@ class MyApp(MDApp):
         addingevent.ids.date_of_event.text = self.date_event
 
     def submit_event(self):
-        app = MDApp.get_running_app()
-        addingevent = app.root.get_screen('addingevent')
-        event_title = addingevent.ids.event_create_header.text
-        event_description = addingevent.ids.event_create_description.text
-        event_location = addingevent.ids.event_create_location.text
-        event_type = addingevent.ids.event_create_type.text
+        if self.use_network:
+            app = MDApp.get_running_app()
+            addingevent = app.root.get_screen('addingevent')
+            event_title = addingevent.ids.event_create_header.text
+            event_description = addingevent.ids.event_create_description.text
+            event_location = addingevent.ids.event_create_location.text
+            event_type = addingevent.ids.event_create_type.text
 
-        addingevent.ids.event_create_header.text = ""
-        addingevent.ids.event_create_description.text = ""
-        addingevent.ids.to_time_event.text = "до"
-        addingevent.ids.from_time_event.text = "c"
-        addingevent.ids.date_of_event.text = "дата"
-        self.sm.current = "main"
-        backend.submit_event(event_title, event_description, self.date_event, self.begining_time_event,
-                             self.ending_time_event, event_type, event_location)
+            addingevent.ids.event_create_header.text = ""
+            addingevent.ids.event_create_description.text = ""
+            addingevent.ids.to_time_event.text = "до"
+            addingevent.ids.from_time_event.text = "c"
+            addingevent.ids.date_of_event.text = "дата"
+            self.sm.current = "main"
+            backend.submit_event(event_title, event_description, self.date_event, self.begining_time_event,
+                                 self.ending_time_event, event_type, event_location)
 
     def chose_date(self):
         date_dialog = MDDatePicker(year=int(pd.datetime.now().year), month=int(pd.datetime.now().month),
@@ -542,11 +531,12 @@ class MyApp(MDApp):
         self.tasks_reminders.append(
             Task_reminder(self.current_event.title, self.current_event.type, self.current_event.time_begin,
                           self.current_event.time_end, self.current_event.date, False, -1))
-        handler = self.upload_tasks(self.tasks_reminders[-1])
-        if handler[0] == 1:
-            self.tasks_reminders.remove(self.tasks_reminders[-1])
-            self.tasks_reminders.append(
-                Task_reminder(self.current_event.title, self.current_event.type, self.current_event.time_begin,
+        if self.use_network:
+            handler = self.upload_tasks(self.tasks_reminders[-1])
+            if handler[0] == 1:
+                self.tasks_reminders.remove(self.tasks_reminders[-1])
+                self.tasks_reminders.append(
+                    Task_reminder(self.current_event.title, self.current_event.type, self.current_event.time_begin,
                               self.current_event.time_end, self.current_event.date, True, handler[1]))
         self.save_tasks()
         self.sort_tasks()
@@ -575,8 +565,8 @@ class MyApp(MDApp):
                     delete_button = Button(size_hint=(None, None),
                                            size=(70, 70),
                                            pos_hint={"center_y": .5},
-                                           background_normal = self.bin_icon,
-                                           background_down = self.bin_icon)
+                                           background_normal=self.bin_icon,
+                                           background_down=self.bin_icon)
                     buttoncallback = partial(self.delete_task, delete_button.parent)
                     delete_button.bind(on_release=buttoncallback)
                     task_card.add_widget(delete_button)
@@ -592,7 +582,7 @@ class MyApp(MDApp):
                     task.parent.children[1].text.split("-")[0] and task_a.time_end == \
                     task.parent.children[1].text.split("-")[1]:
                 if str(self.date_of_list) == task_a.date:
-                    if task_a.uploaded:
+                    if task_a.uploaded and self.use_network:
                         print(1)
                         backend.delete_task(task_a.id)
                     self.tasks_reminders.remove(task_a)
@@ -621,12 +611,8 @@ class MyApp(MDApp):
         self.enter_delete_mode()
 
     def delete_completely(self, task, args):
-        if task.uploaded:
+        if task.uploaded and self.use_network:
             backend.delete_task(task.id)
-        else:
-            handler = self.upload_tasks(task)
-            if handler[0] == 1:
-                backend.delete_task(task.id)
 
         self.tasks_reminders.remove(task)
         self.save_tasks()
@@ -637,7 +623,7 @@ class MyApp(MDApp):
         self.tasks_reminders.remove(task)
         new_task = Task_reminder(task.name, task.type, task.time_begin, task.time_end,
                                  task.date + f"-{self.date_of_list}", False, -1)
-        if not task.uploaded:
+        if (not task.uploaded) and self.use_network:
             handler = self.upload_tasks(task)
             if handler[0] == 1:
                 new_task = Task_reminder(task.name, task.type, task.time_begin, task.time_end,
@@ -645,7 +631,8 @@ class MyApp(MDApp):
         else:
             new_task = Task_reminder(task.name, task.type, task.time_begin, task.time_end,
                                      task.date + f"-{self.date_of_list}", True, task.id)
-        backend.change_task_date(new_task.id, new_task.date)
+        if self.use_network:
+            backend.change_task_date(new_task.id, new_task.date)
         self.tasks_reminders.append(new_task)
         self.sort_tasks()
         self.filter_tasks(self.current_filter)
@@ -659,9 +646,10 @@ class MyApp(MDApp):
     def load_tasks(self):
         try:
             with open("data.pickle", "rb") as f:
-                self.tasks_reminders = pickle.load(f)
+                tasks = pickle.load(f)
+                return tasks
         except(EOFError):
-            pass
+            return []
 
     def set_event_date_range(self):
         date_dialog = MDDatePicker(year=int(pd.datetime.now().year), month=int(pd.datetime.now().month),
@@ -728,6 +716,15 @@ class MyApp(MDApp):
             account.ids.email_label.text = f"email: {email}"
             self.paid_subscriber = handler[3]
             self.user_id = handler[4]
+            tsks = backend.get_tasks(self.user_id)
+            tasks_uploaded = []
+            try:
+                tasks_uploaded.append(Task_reminder(tsks[0], tsks[1], tsks[2], tsks[3], tsks[4], True, tsks[6]))
+            except:
+                pass
+            tasks_saved = self.load_tasks()
+            self.compare_choose(tasks_saved, tasks_uploaded)
+
 
         elif handler[0] == 1:
             log.ids.out_log.text = "неверный пароль"
@@ -754,6 +751,14 @@ class MyApp(MDApp):
                 account.ids.username_label.text = f"{handler[1]}\n{handler[2]}"
                 account.ids.email_label.text = f"email: {log_data[0]}"
                 self.paid_subscriber = handler[3]
+                tsks = backend.get_tasks(self.user_id)
+                tasks_uploaded = []
+                try:
+                    tasks_uploaded.append(Task_reminder(tsks[0], tsks[1], tsks[2], tsks[3], tsks[4], True, tsks[6]))
+                except:
+                    pass
+                tasks_saved = self.load_tasks()
+                self.compare_choose(tasks_saved, tasks_uploaded)
         except:
             pass
 
@@ -765,6 +770,54 @@ class MyApp(MDApp):
 
     def upload_tasks(self, task):
         return backend.upload_tasks(task.name, task.type, task.time_begin, task.time_end, task.date, self.user_id)
+
+    def compare_choose(self, saved_ts, uploaded_ts):
+        dif = False
+        if len(saved_ts) == len(uploaded_ts):
+            for task in saved_ts:
+                if not task.uploaded:
+                    dif = True
+                    break
+        else:
+            dif = True
+        if dif:
+            choose_saved = partial(self.choose_saved, saved_ts)
+            choose_uploaded = partial(self.choose_uploaded, uploaded_ts)
+            self.dialog = MDDialog(
+                title="Внимание!",
+                text="Данные в облаке и на устройстве отличаются.",
+                buttons=[
+                    MDFlatButton(
+                        text="ЗАГРУЗИТЬ ЛОКАЛЬНЫЕ",
+                        on_release=choose_saved
+                    ),
+                    MDFlatButton(
+                        text="ЗАГРУЗИТЬ ИЗ ОБЛАКА",
+                        on_release=choose_uploaded
+                    ),
+                ],
+            )
+            self.dialog.open()
+
+    def choose_saved(self, tasks, args):
+        backend.clear_tasks(self.user_id)
+        self.tasks_reminders = []
+        for task in tasks:
+            handle = backend.upload_tasks(task.name, task.type, task.time_begin, task.time_end, task.date, self.user_id)
+            if handle[0] == 1:
+                self.tasks_reminders.append(
+                    Task_reminder(task.name, task.type, task.time_begin, task.time_end, task.date, True, handle[1]))
+        self.save_tasks()
+        self.dialog.dismiss()
+        self.filter_tasks("@")
+
+    def choose_uploaded(self, tasks, args):
+        self.tasks_reminders = []
+        for task in tasks:
+            self.tasks_reminders.append(Task_reminder(task[0], task[1], task[2], task[3], task[4], True, task[6]))
+        self.save_tasks()
+        self.dialog.dismiss()
+        self.filter_tasks("@")
 
 
 MyApp().run()
