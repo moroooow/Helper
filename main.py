@@ -86,12 +86,12 @@ class MyApp(MDApp):
     user_name = "Аноним"
     email = ""
     cities = ["Омск", "Москва", "Краснодар"]
-    event_types = ["recreation", "sport", "concerts"]
+    event_types = ["отдых", "спорт", "концерт"]
     begin_date_of_events = f"{pd.datetime.now().day}.{pd.datetime.now().month}.{pd.datetime.now().year}"
     end_date_of_event = f"{pd.datetime.now().day + 7}.{pd.datetime.now().month}.{pd.datetime.now().year}"
     dates_of_events = f"{begin_date_of_events}-{end_date_of_event}"
     event_layout_width = 840
-    task_types = ["учёба", "работа", "хобби", "покупки", "другое"]
+    task_types = ["учёба", "работа", "покупки", "другое", "отдых", "спорт", "концерт"]
     tasks_reminders = []
     date_of_list = pd.datetime.now().date()
     current_time = str(datetime.datetime.now().time())
@@ -717,6 +717,7 @@ class MyApp(MDApp):
             self.paid_subscriber = handler[3]
             self.user_id = handler[4]
             tsks = backend.get_tasks(self.user_id)
+            tsks = tsks[0]
             tasks_uploaded = []
             try:
                 tasks_uploaded.append(Task_reminder(tsks[0], tsks[1], tsks[2], tsks[3], tsks[4], True, tsks[6]))
@@ -752,6 +753,7 @@ class MyApp(MDApp):
                 account.ids.email_label.text = f"email: {log_data[0]}"
                 self.paid_subscriber = handler[3]
                 tsks = backend.get_tasks(self.user_id)
+                tsks = tsks[0]
                 tasks_uploaded = []
                 try:
                     tasks_uploaded.append(Task_reminder(tsks[0], tsks[1], tsks[2], tsks[3], tsks[4], True, tsks[6]))

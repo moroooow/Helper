@@ -194,7 +194,7 @@ ScreenManager:
                                 center_y: self.parent.center_y
 
                         FilterButton:
-                            on_release: app.filter_tasks("хобби")
+                            on_release: app.filter_tasks("отдых")
                             Image:
                                 source: app.hobby_filter_icon
                                 center_x: self.parent.center_x
@@ -483,7 +483,7 @@ ScreenManager:
                                 text: "посмотреть"
                                 pos_hint: {"center_x": .5}
                                 on_release: app.root.current = "eventlist"
-                                on_release: app.set_events_in_list("recreation")
+                                on_release: app.set_events_in_list("отдых")
 
                     EventCard:
                         BoxLayout:
@@ -495,7 +495,7 @@ ScreenManager:
                                 text: "посмотреть"
                                 pos_hint: {"center_x": .5}
                                 on_release: app.root.current = "eventlist"
-                                on_release: app.set_events_in_list("sport")
+                                on_release: app.set_events_in_list("спорт")
 
                     EventCard:
                         BoxLayout:
@@ -507,7 +507,7 @@ ScreenManager:
                                 text: "посмотреть"
                                 pos_hint: {"center_x": .5}
                                 on_release: app.root.current = "eventlist"
-                                on_release: app.set_events_in_list("concerts")
+                                on_release: app.set_events_in_list("концерт")
 
 
 <EventDetailsScreen>:
