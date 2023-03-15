@@ -317,7 +317,7 @@ class MyApp(MDApp):
 
     def on_start(self, **kwargs):
         with open("data.pickle", "wb") as f:
-            pickle.dump("", f)
+            pass
         self.init_login()
         self.update_if_paid()
         self.tasks_reminders = self.load_tasks()
@@ -719,9 +719,9 @@ class MyApp(MDApp):
             self.paid_subscriber = handler[3]
             self.user_id = handler[4]
             tsks = backend.get_tasks(self.user_id)
-            tsks = tsks[0]
             tasks_uploaded = []
             try:
+                tsks = tsks[0]
                 tasks_uploaded.append(Task_reminder(tsks[0], tsks[1], tsks[2], tsks[3], tsks[4], True, tsks[6]))
             except:
                 pass
@@ -755,9 +755,10 @@ class MyApp(MDApp):
                 account.ids.email_label.text = f"email: {log_data[0]}"
                 self.paid_subscriber = handler[3]
                 tsks = backend.get_tasks(self.user_id)
-                tsks = tsks[0]
+
                 tasks_uploaded = []
                 try:
+                    tsks = tsks[0]
                     tasks_uploaded.append(Task_reminder(tsks[0], tsks[1], tsks[2], tsks[3], tsks[4], True, tsks[6]))
                 except:
                     pass
