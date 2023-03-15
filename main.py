@@ -316,6 +316,8 @@ class MyApp(MDApp):
         return self.sm
 
     def on_start(self, **kwargs):
+        with open("data.pickle", "wb") as f:
+            pickle.dump("", f)
         self.init_login()
         self.update_if_paid()
         self.tasks_reminders = self.load_tasks()
