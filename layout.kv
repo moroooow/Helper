@@ -1,0 +1,906 @@
+<FilterButton@Button>:
+    size_hint_x: None
+    width: 80
+    background_color: 0,0,0,0
+
+
+<EventCard@MDCard>:
+    elevation: 20
+    size_hint: None, None
+    size: 150, 200
+    radius: 10
+
+
+ScreenManager:
+    RegisterScreen:
+    LoginScreen:
+    MainScreen:
+    EventsScreen:
+    AccountScreen:
+    EventsListScreen:
+    EventDetailsScreen:
+    AddingEventScreen:
+
+
+<RegisterScreen>:
+    name: "register"
+
+    BoxLayout:
+        padding: 10
+        spacing: 10
+        orientation: "vertical"
+        MDLabel:
+            halign: "center"
+            text: "Регистрация"
+            size_hint: 1, None
+            height: 100
+
+        MDTextField:
+            id: email_input
+            hint_text: "эл. почта"
+
+        MDTextField:
+            id: first_name_input
+            hint_text: "Имя"
+
+        MDTextField:
+            id: last_name_input
+            hint_text: "Фамилия"
+
+        MDTextField:
+            id: password_input
+            hint_text: "Пароль"
+
+        MDTextField:
+            id: password_repeat_input
+            hint_text: "Повторить пароль"
+
+        MDLabel:
+            id: out_reg
+            halign: "center"
+
+        MDFillRoundFlatButton:
+            text: "Зарегестрироваться"
+            pos_hint: {"center_x": .5}
+            on_release: app.register()
+
+        MDTextButton:
+            text: "Войти"
+            pos_hint: {"center_x": .5}
+            on_release: app.root.current = "login"
+
+        MDFillRoundFlatButton:
+            text: "Использовать без сети"
+            pos_hint: {"center_x": .5}
+            on_release: app.use_network = False
+            on_release: app.root.current = "main"
+            background_color: (230, 230, 230, 1)
+
+        MDLabel:
+
+            size_hint: 1, None
+            height: 10
+
+
+<LoginScreen>:
+    name: "login"
+    BoxLayout:
+        padding: 10
+        spacing: 10
+        orientation: "vertical"
+        MDLabel:
+            halign: "center"
+            text: "Вход"
+            size_hint: 1, None
+            height: 100
+
+        MDTextField:
+            id: email_input
+            hint_text: "эл. почта"
+
+        MDTextField:
+            id: password_input
+            hint_text: "Пароль"
+
+        MDLabel:
+            id: out_log
+            halign: "center"
+
+        MDFillRoundFlatButton:
+            text: "Войти"
+            pos_hint: {"center_x": .5}
+            on_release: app.login()
+
+        MDTextButton:
+            text: "Зарегестрироваться"
+            pos_hint: {"center_x": .5}
+            on_release: app.root.current = "register"
+
+        MDFillRoundFlatButton:
+            text: "Использовать без сети"
+            pos_hint: {"center_x": .5}
+            on_release: app.use_network = False
+            on_release: app.root.current = "main"
+            background_color: (230, 230, 230, 1)
+
+        MDLabel:
+            size_hint: 1, None
+            height: 10
+
+<MainScreen>:
+    name: "main"
+    MDBoxLayout:
+        orientation: "vertical"
+        padding: 20
+
+
+        MDBoxLayout:
+            orientation: "horizontal"
+            size_hint_y: None
+            size_hint_x: 1
+            height: 70
+
+            MDCard:
+                elevation: 20
+                spacing: 10
+                padding: 10
+                Button:
+                    pos_hint: {"center_y": .5}
+                    size_hint: None, None
+                    size: 60, 60
+                    background_color: 0,0,0,0
+                    on_release: app.root.current = "account"
+                    Image:
+                        source: app.menu_icon
+                        size_hint: None, None
+                        center_x: self.parent.center_x
+                        center_y: self.parent.center_y
+                        size_hint: None, None
+                        size: 160, 160
+
+                ScrollView:
+                    size_hint: 1, 1
+                    MDBoxLayout:
+                        orientation: "horizontal"
+                        size_hint: None, 1
+                        width: self.minimum_width
+
+                        FilterButton:
+                            on_release: app.filter_tasks("@")
+                            Image:
+                                source: app.reset_filter_icon
+                                center_x: self.parent.center_x
+                                center_y: self.parent.center_y
+                                size_hint_x: None
+                                width: 80
+
+                        FilterButton:
+                            on_release: app.filter_tasks("работа")
+                            Image:
+                                source: app.work_filter_icon
+                                center_x: self.parent.center_x
+                                center_y: self.parent.center_y
+                                size_hint_x: None
+                                width: 80
+
+                        FilterButton:
+                            on_release: app.filter_tasks("учёба")
+                            Image:
+                                source: app.book_filter_icon
+                                center_x: self.parent.center_x
+                                center_y: self.parent.center_y
+                                size_hint_x: None
+                                width: 80
+
+                        FilterButton:
+                            on_release: app.filter_tasks("покупки")
+                            Image:
+                                source: app.shoping_filter_icon
+                                center_x: self.parent.center_x
+                                center_y: self.parent.center_y
+                                size_hint_x: None
+                                width: 80
+
+                        FilterButton:
+                            on_release: app.filter_tasks("отдых")
+                            Image:
+                                source: app.hobby_filter_icon
+                                center_x: self.parent.center_x
+                                center_y: self.parent.center_y
+                                size_hint_x: None
+                                width: 80
+
+                        FilterButton:
+                            on_release: app.filter_tasks("другое")
+                            Image:
+                                source: app.pen_filter_icon
+                                center_x: self.parent.center_x
+                                center_y: self.parent.center_y
+                                size_hint_x: None
+                                width: 80
+
+                Button:
+                    size_hint: None, None
+                    size: 50, 50
+                    pos_hint: {"center_y": .5}
+                    background_color: 0,0,0,0
+                    on_release: app.enter_delete_mode()
+                    Image:
+                        source: app.bin_mode_icon
+                        size_hint: None, None
+                        center_x: self.parent.center_x
+                        center_y: self.parent.center_y
+                        size: 50, 50
+
+        ScrollView:
+            size_hint: 1, 1
+            GridLayout:
+                padding: 0, 10, 0, 0
+                id: task_bar
+                cols: 1
+                size_hint: 1, None
+                height: self.minimum_height
+                spacing: 10
+                canvas.before:
+        MDCard:
+            size_hint_x: 1
+            size_hint_y: None
+            height: 80
+            elevation: 20
+            MDFloatLayout:
+
+                Button:
+                    pos_hint: {"center_y": .5, "center_x": .15}
+                    size_hint: None, None
+                    size: 55, 55
+                    on_release: app.root.current = "addingtask"
+                    background_color: 0,0,0,0
+
+                    Image:
+                        source: app.add_task_icon
+                        size_hint: None, None
+                        center_x: self.parent.center_x
+                        center_y: self.parent.center_y
+                        size_hint: None, None
+                        size: 140, 140
+
+                Button:
+                    pos_hint: {"center_y": .5, "center_x": .5}
+                    size_hint: None, None
+                    size: 60, 60
+                    background_color: 0,0,0,0
+                    on_release: app.chose_date()
+                    Image:
+                        source: app.calendar_icon
+                        size_hint: None, None
+                        center_x: self.parent.center_x
+                        center_y: self.parent.center_y
+                        size_hint: None, None
+                        size: 160, 160
+
+                Button:
+                    pos_hint: {"center_y": .5, "center_x": .85}
+                    size_hint: None, None
+                    background_color: 0,0,0,0
+                    size: 55, 55
+                    on_release: app.root.current = "timer"
+                    on_release: app.start_timer()
+                    Image:
+                        source: app.timer_icon
+                        size_hint: None, None
+                        center_x: self.parent.center_x
+                        center_y: self.parent.center_y
+                        size_hint: None, None
+                        size: 140, 140
+
+
+<AccountScreen>:
+    name: "account"
+    MDBoxLayout:
+        id: account_buttons_layout
+        orientation: "vertical"
+        padding: 10
+        spacing: 20
+
+        canvas.before:
+            Color:
+                rgba: 228/255, 230/255, 243/255, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+
+
+        MDBoxLayout:
+            spacing: 120
+            orientation: "horizontal"
+            pos_hint: {"top": 1, "left": 1}
+            size_hint: 1, None
+            height: 100
+
+            canvas:
+                Color:
+                    rgb: 1, 1, 1
+                Ellipse:
+                    pos: self.pos
+                    size: 100, 100
+                    source: app.avatar_source
+                    angle_start: 0
+                    angle_end: 360
+
+            MDLabel:
+                size_hint: None, None
+                size: 0, 0
+
+            MDLabel:
+                id: username_label
+                font_size: 32
+                pos_hint: {"top": 1}
+
+
+        MDLabel:
+            id: email_label
+            font_size: 16
+            size_hint: None, None
+            size: 500, 10
+
+        MDTextButton:
+            markup: True
+            text: "[b][color=#f50a0a]—[/color] Мероприятия[/b]"
+            on_release: app.root.current = "events"
+
+        MDTextButton:
+            markup: True
+            text: "[b][color=#cccd00]—[/color] Расписание\n  друзей[/b]"
+
+        MDTextButton:
+            markup: True
+
+            text: "[b][color=#14a322]—[/color] Оформить\n  подписку[/b]"
+            ##on_release: app.buy_subscription()
+
+        MDTextButton:
+            markup: True
+            text: "[b][color=#f5a50a]—[/color] Выйти[/b]"
+            on_release: app.logout()
+
+        MDTextButton:
+            markup: True
+            text: "[b][color=#b80af5]—[/color] Помощь[/b]"
+
+        MDLabel:
+        FloatLayout:
+            size_hint: 1, None
+            height: 70
+            Button:
+                pos_hint: {"center_y": .5, "left": 1}
+                size_hint: None, None
+                size: 100, 50
+                on_release: app.root.current = "main"
+                background_color: 0,0,0,0
+
+                Image:
+                    source: app.back_icon
+                    center_x: self.parent.center_x
+                    center_y: self.parent.center_y
+                    size_hint: None, None
+                    size: 70, 70
+
+
+<EventsListScreen>:
+    name: "eventlist"
+
+    MDBoxLayout:
+        orientation: "vertical"
+        padding: 10
+
+        MDCard:
+            elevation: 20
+            size_hint: 1, None
+            height: 70
+            FloatLayout:
+
+                Button:
+                    pos_hint: {"center_y": .5, "left": 1}
+                    size_hint: None, None
+                    size: 100, 50
+                    on_release: app.root.current = "events"
+                    background_color: 0,0,0,0
+
+                    Image:
+                        source: app.back_icon
+                        center_x: self.parent.center_x
+                        center_y: self.parent.center_y
+                        size_hint: None, None
+                        size: 70, 70
+
+                Button:
+                    id: date_of_events_button
+                    text: app.dates_of_events
+                    pos_hint: {"center_y": .5, "right": 1}
+                    size_hint: None, None
+                    size: 200, 50
+                    on_release: app.set_event_date_range()
+
+        ScrollView:
+            size_hint: 1, 1
+            MDBoxLayout:
+                padding: 0, 10, 0, 0
+                size_hint: 1, None
+                height: self.minimum_height
+                id: events_list_layout
+                orientation: "vertical"
+                spacing: 10
+
+
+<EventsScreen>:
+    name: "events"
+
+    MDBoxLayout:
+        orientation: "vertical"
+        padding: 10
+
+        MDCard:
+            elevation: 20
+            size_hint: 1, None
+            height: 70
+
+            FloatLayout:
+
+                Button:
+                    pos_hint: {"center_y": .5, "left": 1}
+                    size_hint: None, None
+                    size: 100, 50
+                    on_release: app.root.current = "main"
+                    background_color: 0,0,0,0
+
+                    Image:
+                        source: app.back_icon
+                        center_x: self.parent.center_x
+                        center_y: self.parent.center_y
+                        size_hint: None, None
+                        size: 70, 70
+
+                Spinner:
+                    id: location_spinner
+                    text: "Город"
+                    pos_hint: {"center_y": .5, "right": 1}
+                    size_hint: None, None
+                    size: 100, 50
+                    values: app.cities
+                    on_text: app.choose_location()
+
+        ScrollView:
+            size_hint: 1, 1
+            FloatLayout:
+
+                size_hint: 1, None
+                height: app.event_layout_width
+
+                GridLayout:
+                    cols: 2
+                    size_hint: None, 1
+                    width: 310
+                    pos_hint: {"center_x": .5, "top": 1}
+                    spacing: 10
+                    padding: 0, 10, 0, 0
+
+                    EventCard:
+                        BoxLayout:
+                            padding: 10
+                            orientation: "vertical"
+                            Image:
+                                source: app.recreation_event_img
+                            MDFillRoundFlatButton:
+                                text: "посмотреть"
+                                pos_hint: {"center_x": .5}
+                                on_release: app.root.current = "eventlist"
+                                on_release: app.set_events_in_list("отдых")
+
+                    EventCard:
+                        BoxLayout:
+                            padding: 10
+                            orientation: "vertical"
+                            Image:
+                                source: app.sports_event_img
+                            MDFillRoundFlatButton:
+                                text: "посмотреть"
+                                pos_hint: {"center_x": .5}
+                                on_release: app.root.current = "eventlist"
+                                on_release: app.set_events_in_list("спорт")
+
+                    EventCard:
+                        BoxLayout:
+                            padding: 10
+                            orientation: "vertical"
+                            Image:
+                                source: app.concerts_event_img
+                            MDFillRoundFlatButton:
+                                text: "посмотреть"
+                                pos_hint: {"center_x": .5}
+                                on_release: app.root.current = "eventlist"
+                                on_release: app.set_events_in_list("концерт")
+
+
+<EventDetailsScreen>:
+    name: "eventdetails"
+
+    BoxLayout:
+        orientation: "vertical"
+        padding: 10
+
+        MDCard:
+            elevation: 20
+            size_hint: 1, None
+            height: 70
+
+            FloatLayout:
+                size_hint: 1, None
+                height: 70
+
+                Button:
+                    pos_hint: {"center_y": .5, "left": 1}
+                    size_hint: None, None
+                    size: 100, 50
+                    on_release: app.root.current = "eventlist"
+                    background_color: 0,0,0,0
+
+                    Image:
+                        source: app.back_icon
+                        center_x: self.parent.center_x
+                        center_y: self.parent.center_y
+                        size_hint: None, None
+                        size: 70, 70
+
+        ScrollView:
+            BoxLayout:
+                orientation: "vertical"
+                spacing: 10
+                Image:
+                    id: event_image
+                    pos_hint: {"center_x": .5}
+                    size_hint: .7, .7
+
+                ScrollView:
+                    size_hint: 1, 1
+                    BoxLayout:
+                        spacing: 10
+                        padding: 20
+                        orientation: "vertical"
+                        size_hint: 1, None
+                        height: self.minimum_height
+
+                        MDLabel:
+                            id: event_header
+                            font_size: 32
+                            adaptive_height: True
+
+                        MDLabel:
+                            id: event_label
+                            markup: True
+                            adaptive_height: True
+
+                MDFillRoundFlatButton:
+                    pos_hint: {"center_x": .5}
+                    text: "Добавить"
+
+                    on_release: app.add_event_to_tasks()
+
+<AddingTaskScreen>:
+    name: "addingtask"
+
+
+    BoxLayout:
+        padding: 10
+
+        MDCard:
+            radius: 10
+            elevation: 20
+            padding: 10
+            spacing: 10
+            BoxLayout:
+                padding: 10
+                orientation: "vertical"
+                FloatLayout:
+                    Button:
+                        pos_hint: {"top": 1, "left": 1}
+                        size_hint: None, None
+                        size: 100, 50
+                        on_release: app.root.current = "main"
+                        on_release: app.reset_time()
+                        background_color: 0,0,0,0
+
+                        Image:
+                            source: app.back_icon
+                            center_x: self.parent.center_x
+                            center_y: self.parent.center_y
+                            size_hint: None, None
+                            size: 70, 70
+
+
+
+                Spinner:
+                    id: type_spinner
+                    text: "другое"
+                    values: app.task_types
+                    size_hint: None, None
+                    size: 100, 50
+                    pos_hint: {"center_x": .5}
+
+                MDLabel:
+                    size_hint: 1, None
+                    height: 30
+
+                GridLayout:
+                    cols: 2
+                    size_hint: 1, None
+                    height: 200
+                    BoxLayout:
+                        orientation: "horizontal"
+
+                        MDCheckbox:
+                            id: chb_once
+                            size_hint: None, None
+                            size: 40, 40
+                            pos_hint: {"center_y": .5}
+                            active: True
+
+                        MDLabel:
+                            text: "Один раз"
+
+                    BoxLayout:
+                        orientation: "horizontal"
+
+                        MDCheckbox:
+                            id: chb_mon
+                            size_hint: None, None
+                            size: 40, 40
+                            pos_hint: {"center_y": .5}
+
+                        MDLabel:
+                            text: "Пн"
+
+                    BoxLayout:
+                        orientation: "horizontal"
+
+                        MDCheckbox:
+                            id: chb_tue
+                            size_hint: None, None
+                            size: 40, 40
+                            pos_hint: {"center_y": .5}
+
+                        MDLabel:
+                            text: "Вт"
+
+                    BoxLayout:
+                        orientation: "horizontal"
+
+                        MDCheckbox:
+                            id: chb_wed
+                            size_hint: None, None
+                            size: 40, 40
+                            pos_hint: {"center_y": .5}
+
+                        MDLabel:
+                            text: "Ср"
+
+                    BoxLayout:
+                        orientation: "horizontal"
+
+                        MDCheckbox:
+                            id: chb_thu
+                            size_hint: None, None
+                            size: 40, 40
+                            pos_hint: {"center_y": .5}
+
+                        MDLabel:
+                            text: "Чт"
+
+                    BoxLayout:
+                        orientation: "horizontal"
+
+                        MDCheckbox:
+                            id: chb_fri
+                            size_hint: None, None
+                            size: 40, 40
+                            pos_hint: {"center_y": .5}
+
+                        MDLabel:
+                            text: "Пт"
+
+                    BoxLayout:
+                        orientation: "horizontal"
+
+                        MDCheckbox:
+                            id: chb_sat
+                            size_hint: None, None
+                            size: 40, 40
+                            pos_hint: {"center_y": .5}
+
+                        MDLabel:
+                            text: "Сб"
+
+                    BoxLayout:
+                        orientation: "horizontal"
+
+                        MDCheckbox:
+                            id: chb_sun
+                            size_hint: None, None
+                            size: 40, 40
+                            pos_hint: {"center_y": .5}
+
+                        MDLabel:
+                            text: "Вс"
+
+                MDTextField:
+                    id: task_input
+                    hint_text: "Задача"
+
+                GridLayout:
+                    cols: 2
+                    spacing: 30
+                    padding: 30
+                    pos_hint: {"center_x": .5}
+                    size_hint: None, 1
+                    width: 265
+
+                    MDFillRoundFlatButton:
+                        id: from_button
+                        text: "c"
+                        pos_hint: {"center_y": .5}
+                        on_release: app.time_picker("from")
+
+                    MDFillRoundFlatButton:
+                        id: to_button
+                        text: "до"
+                        pos_hint: {"center_y": .5}
+                        on_release: app.time_picker("to")
+
+                MDFillRoundFlatButton:
+                    text: "добавить"
+                    pos_hint: {"center_x": .5}
+                    on_release: app.root.current = "main"
+                    on_release: app.create_task()
+
+
+<AddingEventScreen>:
+    name: "addingevent"
+
+    BoxLayout:
+        orientation: "vertical"
+        padding: 10
+        spacing: 10
+
+        FloatLayout:
+            size_hint: 1, None
+            height: 70
+
+            Button:
+                pos_hint: {"top": 1, "left": 1}
+                size_hint: None, None
+                size: 100, 50
+                on_release: app.root.current = "account"
+                background_color: 0,0,0,0
+
+                Image:
+                    source: app.back_icon
+                    center_x: self.parent.center_x
+                    center_y: self.parent.center_y
+                    size_hint: None, None
+                    size: 70, 70
+
+        GridLayout:
+            cols: 1
+            spacing: 10
+            Spinner:
+                id: event_create_type
+                text: "Тип мероприятия"
+                pos_hint: {"top": 1, "center_x": .5}
+                size_hint: None, None
+                size: 100, 50
+                values: app.event_types
+            Spinner:
+                id: event_create_location
+                text: "Город"
+                pos_hint: {"top": 1, "center_x": .5}
+                size_hint: None, None
+                size: 100, 50
+                values: app.cities
+
+            GridLayout:
+                spacing: 10
+                cols: 2
+                size_hint: 1, None
+                height: 100
+
+                MDFillRoundFlatButton:
+                    id: from_time_event
+                    text: "c"
+                    on_release: app.set_event_time("from")
+
+                MDFillRoundFlatButton:
+                    id: to_time_event
+                    text: "до"
+                    on_release: app.set_event_time("to")
+
+                MDFillRoundFlatButton:
+                    id: date_of_event
+                    text: "дата"
+                    on_release: app.set_event_date()
+
+            ScrollView:
+                size_hint: 1, 1
+                BoxLayout:
+                    size_hint: 1, None
+                    height: self.minimum_height
+                    orientation: "vertical"
+                    spacing: 10
+                    MDTextField:
+                        id: event_create_header
+                        hint_text: "Заголовок"
+
+                    MDTextField:
+                        id: event_create_description
+                        hint_text: "Описание"
+                        mode: "rectangle"
+                        multiline: True
+
+            MDFillRoundFlatButton:
+                text: "Submit"
+                on_release: app.submit_event()
+
+
+<TimerScreen>:
+    name: "timer"
+
+    BoxLayout:
+        orientation: "vertical"
+        padding: 10
+        spacing: 10
+
+        FloatLayout:
+            size_hint: 1, None
+            height: 70
+
+            Button:
+                pos_hint: {"top": 1, "left": 1}
+                size_hint: None, None
+                size: 100, 50
+                on_release: app.root.current = "main"
+                background_color: 0,0,0,0
+
+                Image:
+                    source: app.back_icon
+                    center_x: self.parent.center_x
+                    center_y: self.parent.center_y
+                    size_hint: None, None
+                    size: 70, 70
+
+        MDLabel:
+            id: current_task
+            text: "no task found"
+            halign: "center"
+            font_size: 32
+
+        Image:
+            source: app.clock_icon
+            size_hint: None, None
+            size: 300, 300
+            pos_hint: {"center_x": .5}
+
+        MDLabel:
+            text: "Осталость:"
+            halign: "center"
+            font_size: 32
+
+        MDLabel:
+            id: time_remaining
+            text: "__ч __мин"
+            halign: "center"
+            font_size: 32
+
+        MDProgressBar:
+            id: time_bar
+            value: 0
+
+        MDLabel:
