@@ -104,6 +104,7 @@ class YourDayApp(MDApp):
     in_delete_mode = False
     use_network = True
     waiting_for_command = False
+    creating_task_va = False
     add_task_icon = "images/add_task_icon.PNG"
     calendar_icon = "images/calendar.PNG"
     timer_icon = "images/timer_icon.PNG"
@@ -132,6 +133,14 @@ class YourDayApp(MDApp):
                    "отдых": (178 / 255, 221 / 255, 139 / 255, 1),
                    "спорт": (1, 1, 1, 1),
                    "концерт": (1, 1, 1, 1)}
+
+    va_task_title = ""
+    va_task_time = ""
+    va_task_type = ""
+    va_task_date = ""
+    creation_step = 0
+    previous_va_data = ""
+    command_to_ignore = ""
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -328,7 +337,7 @@ class YourDayApp(MDApp):
         self.sm.add_widget(AddingEventScreen(name="addingevent"))
         self.sm.add_widget(TimerScreen(name="timer"))
         Clock.schedule_interval(self.update_timer, 1 / 30.)
-        Clock.schedule_interval(self.listen_to_name, 1/30.)
+        Clock.schedule_interval(self.listen_to_command, 1 / 30.)
 
         return self.sm
 
@@ -338,9 +347,8 @@ class YourDayApp(MDApp):
         self.tasks_reminders = self.load_tasks()
         self.filter_tasks("@")
 
-    def listen_to_name(self, *args):
+    def listen_to_command(self, *args):
         data = voice_assistant.read_data_stream()
-        print(data)
         if data == -1:
             return -1
         if voice_assistant.assistant_name in data and not self.waiting_for_command:
@@ -350,9 +358,28 @@ class YourDayApp(MDApp):
             listening_sound.play()
 
         if self.waiting_for_command:
-            self.timer = self.timer + 1/30
-            if self.timer > 2:
-                self.waiting_for_command = False
+            if data == voice_assistant.assistant_name or data == "":
+                self.timer = self.timer + 1 / 30
+                if self.timer > 4:
+                    self.waiting_for_command = False
+            else:
+                self.timer = 0
+
+        if (not self.previous_va_data == voice_assistant.assistant_name) and self.waiting_for_command:
+            if data == "":
+                response = voice_assistant.understand_and_respond(self.previous_va_data)
+                if response == "ql":
+                    self.waiting_for_command = False
+                if response == "sgt":
+                    self.creation_step = 1
+                    self.command_to_ignore = self.previous_va_data
+        if self.creation_step == 1 and data == "" and not self.previous_va_data == self.command_to_ignore:
+                self.va_task_title = self.previous_va_data
+                if not self.va_task_title == "":
+                    print(self.va_task_title)
+                    self.creation_step = 2
+
+        self.previous_va_data = data
 
 
 
