@@ -352,6 +352,10 @@ class YourDayApp(MDApp):
         if data == -1:
             return -1
         if voice_assistant.assistant_name in data and not self.waiting_for_command:
+            self.va_task_date = ""
+            self.va_task_time = ""
+            self.va_task_title = ""
+            self.va_task_type = ""
             self.timer = 0
             self.waiting_for_command = True
             listening_sound = SoundLoader.load(filename='./sounds/listening_sound.mp3')
@@ -373,11 +377,45 @@ class YourDayApp(MDApp):
                 if response == "sgt":
                     self.creation_step = 1
                     self.command_to_ignore = self.previous_va_data
-        if self.creation_step == 1 and data == "" and not self.previous_va_data == self.command_to_ignore:
+
+        if data == "" and not (self.previous_va_data == self.command_to_ignore or self.previous_va_data == ""):
+            if self.creation_step == 1:
                 self.va_task_title = self.previous_va_data
                 if not self.va_task_title == "":
                     print(self.va_task_title)
+                    voice_assistant.va_say("what is the time of the task")
+                    self.command_to_ignore = self.previous_va_data
                     self.creation_step = 2
+            if self.creation_step == 2:
+                self.va_task_time = voice_assistant.understand_time(self.previous_va_data)
+                if not self.va_task_time == "":
+                    self.creation_step = 3
+                    print(self.va_task_time)
+            if self.creation_step == 3:
+                self.va_task_date = voice_assistant.understand_date(self.previous_va_data) + "." + pd.datetime.now().year
+                if not self.va_task_date == "." + pd.datetime.now().year:
+                    self.creation_step = 4
+                    print(self.va_task_date)
+            if self.creation_step == 4:
+                if self.previous_va_data in self.task_types:
+                    self.va_task_type = self.previous_va_data
+                    self.creation_step = 5
+                    print(self.va_task_type)
+                    voice_assistant.va_say("save the task")
+            if self.creation_step == 5:
+                if self.previous_va_data == "да":
+                    self.tasks_reminders.append(Task_reminder(self.va_task_title, self.va_task_type, self.va_task_time.split("-")[0], self.va_task_time.split("-")[1], self.va_task_date, False, -1))
+                    if self.use_network:
+                        handler = self.upload_tasks(self.tasks_reminders[-1])
+                        if handler[0] == 1:
+                            self.tasks_reminders.remove(self.tasks_reminders[-1])
+                            self.tasks_reminders.append(
+                                Task_reminder(self.va_task_title, self.va_task_type, self.va_task_time.split("-")[0], self.va_task_time.split("-")[1], self.va_task_date, True, handler[1]))
+                    self.save_tasks()
+                    self.sort_tasks()
+                    self.filter_tasks("@")
+                else:
+                    self.waiting_for_command = False
 
         self.previous_va_data = data
 
