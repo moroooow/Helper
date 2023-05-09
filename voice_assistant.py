@@ -130,7 +130,8 @@ def understand_date(data):
     if day == "" or month == "":
         return ""
     engine.say("what is the type of the task")
-    return f"{day}.{month}"
+    engine.runAndWait()
+    return f"{month}-{day}"
 
 
 def va_say(fraze):
