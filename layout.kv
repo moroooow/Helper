@@ -14,6 +14,7 @@
 ScreenManager:
     RegisterScreen:
     LoginScreen:
+    QueryScreen:
     MainScreen:
     EventsScreen:
     AccountScreen:
@@ -34,6 +35,20 @@ ScreenManager:
             text: "Регистрация"
             size_hint: 1, None
             height: 100
+
+        BoxLayout:
+            orientation: "horizontal"
+            size_hint: 1, None
+            height: 40
+            MDLabel:
+                halign: "center"
+                text: "Город проживания: "
+
+            Spinner:
+                id: city_dr_do
+                values: app.cities
+                text: "Москва"
+
 
         MDTextField:
             id: email_input
@@ -126,6 +141,73 @@ ScreenManager:
         MDLabel:
             size_hint: 1, None
             height: 10
+
+<QueryScreen>:
+    name: "query"
+    BoxLayout:
+        orientation: "vertical"
+        ScrollView:
+            size_hint: 1, 1
+            FloatLayout:
+
+                size_hint: 1, None
+                height: app.event_layout_width
+
+                GridLayout:
+                    cols: 2
+                    size_hint: None, 1
+                    width: 310
+                    pos_hint: {"center_x": .5, "top": 1}
+                    spacing: 10
+                    padding: 0, 10, 0, 0
+                    EventCard:
+                        BoxLayout:
+                            padding: 10
+                            orientation: "vertical"
+                            Image:
+                                source: app.recreation_event_img
+                            MDSlider:
+                                id: recreation_slider
+                                min: 0
+                                max: 10
+                                value: 0
+                                size_hint: 1, 0.3
+
+                    EventCard:
+                        BoxLayout:
+                            padding: 10
+                            orientation: "vertical"
+                            Image:
+                                source: app.sports_event_img
+                            MDSlider:
+                                id: sports_slider
+                                min: 0
+                                max: 10
+                                value: 0
+                                size_hint: 1, 0.3
+
+                    EventCard:
+                        BoxLayout:
+                            padding: 10
+                            orientation: "vertical"
+                            Image:
+                                source: app.concerts_event_img
+                            MDSlider:
+                                id: concerts_slider
+                                min: 0
+                                max: 10
+                                value: 0
+                                size_hint: 1, 0.3
+        MDFillRoundFlatButton:
+            text: "готово"
+            pos_hint: {'center_x': 0.5}
+            size_hint_y: None
+            height: 100
+            on_release: app.root.current = "main"
+            on_release: app.save_interests()
+
+
+
 
 <MainScreen>:
     name: "main"
