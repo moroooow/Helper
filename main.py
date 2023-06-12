@@ -56,6 +56,10 @@ class MainScreen(Screen):
     pass
 
 
+class SettingsScreen(Screen):
+    pass
+
+
 class AccountScreen(Screen):
     pass
 
@@ -107,6 +111,7 @@ class YourDayApp(MDApp):
     use_network = True
     waiting_for_command = False
     logged_in = False
+    use_va = False
     add_task_icon = "images/add_task_icon.PNG"
     calendar_icon = "images/calendar.PNG"
     timer_icon = "images/timer_icon.PNG"
@@ -320,6 +325,7 @@ class YourDayApp(MDApp):
         self.sm.add_widget(LoginScreen(name="login"))
         self.sm.add_widget(QueryScreen(name="query"))
         self.sm.add_widget(MainScreen(name="main"))
+        self.sm.add_widget(SettingsScreen(name="settings"))
         self.sm.add_widget(AccountScreen(name="account"))
         self.sm.add_widget(EventsScreen(name="events"))
         self.sm.add_widget(EventsListScreen(name="eventlist"))
@@ -335,10 +341,14 @@ class YourDayApp(MDApp):
     def on_start(self, **kwargs):
         self.init_login()
         self.tasks_reminders = self.load_tasks()
+        self.load_settings()
         self.filter_tasks("@")
+        app = MDApp.get_running_app()
+        settings = app.root.get_screen('settings')
+        settings.ids.use_va_switch.active = self.use_va
 
     def listen_to_name(self, *args):
-        if not self.logged_in:
+        if not self.logged_in or not self.use_va:
             return 0
         data = voice_assistant.read_data_stream()
         if data == -1:
@@ -644,6 +654,24 @@ class YourDayApp(MDApp):
         self.save_tasks()
         self.dialog.dismiss()
 
+    def save_settings(self):
+        with open("settings.pickle", "wb") as f:
+            pickle.dump([self.use_va], f, 5)
+
+    def load_settings(self):
+        try:
+            with open("settings.pickle", "rb") as f:
+                settings = pickle.load(f)
+                self.use_va = settings[0]
+                print(self.use_va)
+        except(EOFError, FileNotFoundError):
+            pass
+
+    def set_va(self):
+        app = MDApp.get_running_app()
+        settings = app.root.get_screen('settings')
+        self.use_va = settings.ids.use_va_switch.active
+
     def save_tasks(self):
         with open("data.pickle", "wb") as f:
             pickle.dump(self.tasks_reminders, f, 5)
@@ -761,7 +789,6 @@ class YourDayApp(MDApp):
         self.sm.current = "register"
         with open("data.pickle", "wb") as f:
             pickle.dump("", f)
-
 
     def save_interests(self):
         app = MDApp.get_running_app()
