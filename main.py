@@ -3,13 +3,14 @@ from kivymd.app import MDApp
 from kivy.uix.screenmanager import Screen, ScreenManager, NoTransition
 from kivymd.uix.card import MDCard
 from kivymd.uix.label import MDLabel
-from kivymd.uix.button import MDFillRoundFlatButton, MDFlatButton
+from kivymd.uix.button import MDFillRoundFlatButton, MDTextButton, MDFlatButton
 from kivymd.uix.dialog import MDDialog
 from kivy.uix.button import Button
 from functools import partial
-from kivymd.uix.picker import MDTimePicker, MDDatePicker
+from kivymd.uix.pickers import MDTimePicker, MDDatePicker
 from kivymd.uix.selectioncontrol import MDCheckbox
 from typing import NamedTuple
+import pandas as pd
 import datetime
 from kivy.clock import Clock
 import pickle
@@ -22,14 +23,18 @@ from kivy.core.audio import SoundLoader
 Window.size = (375, 641)
 
 
+# класс задания
 class Task_reminder(NamedTuple):
     name: str
     type: str
     time_begin: str
     time_end: str
     date: str
+    uploaded: bool
+    id: int
 
 
+# класс мероприятия
 class Event(NamedTuple):
     title: str
     description: str
@@ -40,78 +45,85 @@ class Event(NamedTuple):
     location: str
 
 
+# класс окна регистрации
 class RegisterScreen(Screen):
     pass
 
 
+# класс окна входа
 class LoginScreen(Screen):
     pass
 
 
-class QueryScreen(Screen):
-    pass
-
-
+# класс главного окна (хаба)
 class MainScreen(Screen):
     pass
 
 
-class SettingsScreen(Screen):
-    pass
-
-
+# класс окна аккаунта
 class AccountScreen(Screen):
     pass
 
 
+# класс окна создания задания
 class AddingTaskScreen(Screen):
     pass
 
-
+1
+# класс окна типов мероприятий
 class EventsScreen(Screen):
     pass
 
 
+# класс окна мероприятний
 class EventsListScreen(Screen):
     pass
 
 
+# класс окна подробностей о мероприятии
 class EventDetailsScreen(Screen):
     pass
 
 
+# класс окна создания мероприятия
 class AddingEventScreen(Screen):
     pass
 
 
+# класс окна таймера
 class TimerScreen(Screen):
     pass
 
 
+# главный класс приложения
 class YourDayApp(MDApp):
-    date_time_now = datetime.datetime.now()
     avatar_source = "images/avatar.png"
     recreation_event_img = "images/recreation_events.PNG"
     concerts_event_img = "images/concerts_events.PNG"
     sports_event_img = "images/sport_events.PNG"
     user_name = "Аноним"
     email = "email: "
-    cities = ["Омск", "Москва", "Краснодар", "Геленджик"]
+    cities = ["Омск", "Москва", "Краснодар"]
     event_types = ["отдых", "спорт", "концерт"]
-    begin_date_of_events = f"{date_time_now.day}.{date_time_now.month}.{date_time_now.year}"
-    end_date_of_event = f"{date_time_now.day + 7}.{date_time_now.month}.{date_time_now.year}"
+    # даты фильтра мероприятий (начала и конца)
+    begin_date_of_events = f"{pd.datetime.now().day}.{pd.datetime.now().month}.{pd.datetime.now().year}"
+    end_date_of_event = f"{pd.datetime.now().day + 7}.{pd.datetime.now().month}.{pd.datetime.now().year}"
     dates_of_events = f"{begin_date_of_events}-{end_date_of_event}"
     event_layout_width = 410
     task_types = ["учёба", "работа", "покупки", "другое", "отдых", "спорт", "концерт"]
     tasks_reminders = []
-    date_of_list = date_time_now.date()
-    current_time = str(date_time_now.time())
+    date_of_list = pd.datetime.now().date()
+    current_time = str(datetime.datetime.now().time())
+    # пользуется ли подпиской пользователь
     paid_subscriber = False
+    # находится ли пользователь в режиме удаления заданий
     in_delete_mode = False
+    # подключён ли пользователь к серверу
     use_network = True
+    # слушает ли голосовой помошник пользователя
     waiting_for_command = False
-    logged_in = False
-    use_va = False
+    # находится ли голосовой помошник в режиме создания задания
+    creating_task_va = False
     add_task_icon = "images/add_task_icon.PNG"
     calendar_icon = "images/calendar.PNG"
     timer_icon = "images/timer_icon.PNG"
@@ -126,14 +138,21 @@ class YourDayApp(MDApp):
     reset_filter_icon = "images/reset_filter_icon.PNG"
     bin_mode_icon = "images/bin_mode_icon.PNG"
     bin_icon = "images/bin_icon.PNG"
+    # время окончания текущего задания
     current_task_time = ""
+    # время начала текущего задания
     current_task_begin = ""
+    # текущее задание
     current_event = None
+    # текущий фильтр заданий
     current_filter = "@"
+    # выбранный фильтр мероприятий по типу
     current_event_type = ""
+    # выбранный фильтр мероприятий по городу
     current_location = ""
-    user_city = ""
+    # id пользователя
     user_id = -1
+    # словарь цветов заданий по типам
     task_colors = {"учёба": (82 / 255, 214 / 255, 252 / 255, 1),
                    "работа": (255 / 255, 217 / 255, 119 / 255, 1),
                    "покупки": (254 / 255, 165 / 255, 125 / 255, 1),
@@ -141,6 +160,7 @@ class YourDayApp(MDApp):
                    "отдых": (178 / 255, 221 / 255, 139 / 255, 1),
                    "спорт": (1, 1, 1, 1),
                    "концерт": (1, 1, 1, 1)}
+
     # параметры задания, создаваемого голосовым помощником
     va_task_title = ""
     va_task_time = ""
@@ -153,11 +173,13 @@ class YourDayApp(MDApp):
     # комманда, которую должен игнорировать голосовой помощник
     command_to_ignore = ""
 
+    # инициализация
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.sm = ScreenManager(transition=NoTransition())
         self.screen = Builder.load_file("layout.kv")
 
+    # загрузка мероприятий
     def set_events_in_list(self, event_type):
         self.current_event_type = event_type
         app = MDApp.get_running_app()
@@ -167,10 +189,12 @@ class YourDayApp(MDApp):
         events = []
         if self.use_network:
             try:
+                # загрузка событий из бд
                 for event in backend.get_events(event_type, self.current_location):
                     events.append(Event(event[0], event[1], event[2], event[3], event[4], event[5], event[6]))
             except TypeError:
                 pass
+        # фильтр мероприятий по дате
         for event in events:
             if int(self.begin_date_of_events.split('.')[2]) <= int(
                     event.date.split('.')[2]) <= \
@@ -202,6 +226,7 @@ class YourDayApp(MDApp):
                                                                                                                1]))))):
                     pass
                 else:
+                    # создание карточки мероприятия
                     ev_box = MDCard(elevation=10,
                                     size_hint=(1, None),
                                     height=100,
@@ -216,6 +241,7 @@ class YourDayApp(MDApp):
                     ev_box.bind(on_release=buttoncallback)
                     event_list.ids.events_list_layout.add_widget(ev_box)
 
+    # загрузка деталей выбранного мероприятия
     def show_event_details(self, event, instance):
         self.sm.current = "eventdetails"
         app = MDApp.get_running_app()
@@ -225,6 +251,7 @@ class YourDayApp(MDApp):
         event_details.ids.event_label.text = f"[size=12]{event.date}\nc {event.time_begin} до {event.time_end}[/size]\n\n{event.description}"
         self.current_event = event
 
+    # бинд кнопок окна часов при выборе времени задания
     def time_picker(self, arg):
         time_dialog = MDTimePicker()
         if arg == "from":
@@ -233,27 +260,21 @@ class YourDayApp(MDApp):
             time_dialog.bind(on_save=self.set_ending_time)
         time_dialog.open()
 
+    # выбор начала времени задания
     def set_begining_time(self, instance, time):
         app = MDApp.get_running_app()
         addingtask = app.root.get_screen('addingtask')
         self.begining_time = str(time)[:5]
         addingtask.ids.from_button.text = f'c {self.begining_time[:5]}'
 
+    # выбор конца времени задания
     def set_ending_time(self, instance, time):
         app = MDApp.get_running_app()
         addingtask = app.root.get_screen('addingtask')
         self.ending_time = str(time)[:5]
         addingtask.ids.to_button.text = f'до {self.ending_time}'
 
-    def reset_time(self):
-        self.begining_time = ""
-        self.ending_time = ""
-        app = MDApp.get_running_app()
-        addingtask = app.root.get_screen('addingtask')
-        addingtask.ids.from_button.text = f'c'
-        addingtask.ids.to_button.text = f'до'
-        addingtask.ids.task_input.text = ""
-
+    # создание задания из введённой формы
     def create_task(self):
         app = MDApp.get_running_app()
         addingtask = app.root.get_screen('addingtask')
@@ -261,12 +282,23 @@ class YourDayApp(MDApp):
         addingtask.ids.from_button.text = f'c'
         addingtask.ids.to_button.text = f'до'
         date = ""
+        # проверка если задание поставлино только на один раз
         if addingtask.ids.chb_once.active:
+            # создание задания
             self.tasks_reminders.append(
                 Task_reminder(addingtask.ids.task_input.text, addingtask.ids.type_spinner.text, self.begining_time,
-                              self.ending_time, str(self.date_of_list).replace(",", "-")))
+                              self.ending_time, str(self.date_of_list).replace(",", "-"), False, -1))
+            # добавление задания в бд
+            if self.use_network:
+                handler = self.upload_tasks(self.tasks_reminders[-1])
+                if handler[0] == 1:
+                    o_t = self.tasks_reminders[-1]
+                    new_task = Task_reminder(o_t.name, o_t.type, o_t.time_begin, o_t.time_end, o_t.date, True,
+                                             handler[1])
+                    self.tasks_reminders[-1] = new_task
             self.save_tasks()
         else:
+            # проверки, если задания поставленны на дни недели
             if addingtask.ids.chb_mon.active:
                 date += "0"
 
@@ -290,42 +322,31 @@ class YourDayApp(MDApp):
 
             self.tasks_reminders.append(
                 Task_reminder(addingtask.ids.task_input.text, addingtask.ids.type_spinner.text, self.begining_time,
-                              self.ending_time, date))
+                              self.ending_time, date, False, -1))
+            if self.use_network:
+                handler = self.upload_tasks(self.tasks_reminders[-1])
+                if handler[0] == 1:
+                    o_t = self.tasks_reminders[-1]
+                    new_task = Task_reminder(o_t.name, o_t.type, o_t.time_begin, o_t.time_end, o_t.date, True,
+                                             handler[1])
+                    self.tasks_reminders.remove(self.tasks_reminders[-1])
+                    self.tasks_reminders.append(new_task)
             self.save_tasks()
 
         self.sort_tasks()
         self.begining_time = ""
         self.ending_time = ""
         addingtask.ids.task_input.text = ""
-        mainscreen.ids.task_bar.clear_widgets()
-        for task in self.tasks_reminders:
-            if str(self.date_of_list).replace(",", "-") in task.date or str(self.date_of_list.weekday()) in task.date:
-                task_card = MDCard(elevation=10,
-                                   size_hint=(1, None),
-                                   height=80,
-                                   radius=10,
-                                   padding=10,
-                                   md_bg_color=self.task_colors[task.type],
-                                   orientation="horizontal")
-                task_card.add_widget(MDLabel(text=task.name))
-                task_card.add_widget(MDLabel(text=f"{task.time_begin}-{task.time_end}",
-                                             halign="right",
-                                             size_hint=(None, 1),
-                                             width=100))
-                task_card.add_widget(MDCheckbox(size_hint=(None, None),
-                                                size=(70, 70),
-                                                pos_hint={"center_y": .5}))
-                mainscreen.ids.task_bar.add_widget(task_card)
+        self.filter_tasks(self.current_filter)
 
     def build(self):
         self.theme_cls.theme_style = "Light"
         self.theme_cls.primary_palette = "Amber"
 
+        # добавление всех окон в мэнеджер окон
         self.sm.add_widget(RegisterScreen(name="register"))
         self.sm.add_widget(LoginScreen(name="login"))
-        self.sm.add_widget(QueryScreen(name="query"))
         self.sm.add_widget(MainScreen(name="main"))
-        self.sm.add_widget(SettingsScreen(name="settings"))
         self.sm.add_widget(AccountScreen(name="account"))
         self.sm.add_widget(EventsScreen(name="events"))
         self.sm.add_widget(EventsListScreen(name="eventlist"))
@@ -333,23 +354,22 @@ class YourDayApp(MDApp):
         self.sm.add_widget(AddingTaskScreen(name="addingtask"))
         self.sm.add_widget(AddingEventScreen(name="addingevent"))
         self.sm.add_widget(TimerScreen(name="timer"))
+
+        # вызыв функций каждую 1/30 секунды
         Clock.schedule_interval(self.update_timer, 1 / 30.)
-        Clock.schedule_interval(self.listen_to_name, 1 / 30.)
+        Clock.schedule_interval(self.listen_to_command, 1 / 30.)
 
         return self.sm
 
     def on_start(self, **kwargs):
-        self.init_login()
         self.tasks_reminders = self.load_tasks()
-        self.load_settings()
+        self.init_login()
+        self.update_if_paid()
         self.filter_tasks("@")
-        app = MDApp.get_running_app()
-        settings = app.root.get_screen('settings')
-        settings.ids.use_va_switch.active = self.use_va
 
-    def listen_to_name(self, *args):
-        if not self.logged_in or not self.use_va:
-            return 0
+    # алгоритм работы голосового помощника
+    def listen_to_command(self, *args):
+        # чтение данных голоса в текст
         data = voice_assistant.read_data_stream()
         if data == -1:
             return -1
@@ -401,9 +421,8 @@ class YourDayApp(MDApp):
                     print(self.va_task_time)
             # третий этап создания задания (дата)
             if self.creation_step == 3:
-                self.va_task_date = str(self.date_time_now.year) + "-" + voice_assistant.understand_date(
-                    self.previous_va_data)
-                if not self.va_task_date == str(self.date_time_now.year) + "-":
+                self.va_task_date = str(pd.datetime.now().year) + "-" + voice_assistant.understand_date(self.previous_va_data)
+                if not self.va_task_date == str(pd.datetime.now().year) + "-":
                     self.creation_step = 4
                     print(self.va_task_date)
             # четвёртый этап создания задания (тип)
@@ -416,9 +435,13 @@ class YourDayApp(MDApp):
             # пятый этап создания задания (подтверждение)
             if self.creation_step == 5:
                 if self.previous_va_data == "да":
-                    self.tasks_reminders.append(
-                        Task_reminder(self.va_task_title, self.va_task_type, self.va_task_time.split("-")[0],
-                                      self.va_task_time.split("-")[1], self.va_task_date))
+                    self.tasks_reminders.append(Task_reminder(self.va_task_title, self.va_task_type, self.va_task_time.split("-")[0], self.va_task_time.split("-")[1], self.va_task_date, False, -1))
+                    if self.use_network:
+                        handler = self.upload_tasks(self.tasks_reminders[-1])
+                        if handler[0] == 1:
+                            self.tasks_reminders.remove(self.tasks_reminders[-1])
+                            self.tasks_reminders.append(
+                                Task_reminder(self.va_task_title, self.va_task_type, self.va_task_time.split("-")[0], self.va_task_time.split("-")[1], self.va_task_date, True, handler[1]))
                     self.save_tasks()
                     self.sort_tasks()
                     self.filter_tasks(self.current_filter)
@@ -427,12 +450,95 @@ class YourDayApp(MDApp):
 
         self.previous_va_data = data
 
+    # покупка подписки (не законченая функция)
+    def buy_subscription(self):
+        if not self.paid_subscriber and self.use_network:
+            app = MDApp.get_running_app()
+            accountscreen = app.root.get_screen('account')
+            addeventbutton = MDTextButton(markup=True,
+                                          text="[b][color=#f306a7]—[/color] Добавить\n  мероприятие[/b]")
+            addeventbutton.bind(on_release=self.to_create_event)
+            accountscreen.ids.account_buttons_layout.add_widget(addeventbutton, 2)
+            backend.set_paid(self.email)
+
+    # обновление юи при покупке
+    def update_if_paid(self):
+        if self.paid_subscriber:
+            app = MDApp.get_running_app()
+            accountscreen = app.root.get_screen('account')
+            addeventbutton = MDTextButton(markup=True,
+                                          text="[b][color=#f306a7]—[/color] Добавить\n  мероприятие[/b]")
+            addeventbutton.bind(on_release=self.to_create_event)
+            accountscreen.ids.account_buttons_layout.add_widget(addeventbutton, 2)
+
+    # переход на страницу создания мероприятия
+    def to_create_event(self, arg):
+        self.sm.current = "addingevent"
+
+    # бинд кнопок диалогового окна выбора времени мероприятия
+    def set_event_time(self, arg):
+        time_dialog = MDTimePicker()
+        if arg == "from":
+            time_dialog.bind(on_save=self.set_begining_time_event)
+        elif arg == "to":
+            time_dialog.bind(on_save=self.set_ending_time_event)
+        time_dialog.open()
+
+    # выбор начала времени мероприятия
+    def set_begining_time_event(self, instance, time):
+        app = MDApp.get_running_app()
+        addingevent = app.root.get_screen('addingeventм')
+        self.begining_time_event = str(time)[:5]
+        addingevent.ids.from_time_event.text = f'c {self.begining_time_event[:5]}'
+
+    # выбор конца времени мероприятия
+    def set_ending_time_event(self, instance, time):
+        app = MDApp.get_running_app()
+        addingevent = app.root.get_screen('addingevent')
+        self.ending_time_event = str(time)[:5]
+        addingevent.ids.to_time_event.text = f'до {self.ending_time_event[:5]}'
+
+    # выбор даты проведения мероприятия
+    def set_event_date(self):
+        date_dialog = MDDatePicker(year=int(pd.datetime.now().year), month=int(pd.datetime.now().month),
+                                   day=int(pd.datetime.now().day))
+        date_dialog.bind(on_save=self.set_date_event_complete)
+        date_dialog.open()
+
+    # конец выбора даты мероприятия
+    def set_date_event_complete(self, instance, value, date):
+        app = MDApp.get_running_app()
+        addingevent = app.root.get_screen('addingevent')
+        self.date_event = str(value).split("-")[2] + "." + str(value).split("-")[1] + "." + str(value).split("-")[0]
+        addingevent.ids.date_of_event.text = self.date_event
+
+    # отправка созданого мероприятия
+    def submit_event(self):
+        if self.use_network:
+            app = MDApp.get_running_app()
+            addingevent = app.root.get_screen('addingevent')
+            event_title = addingevent.ids.event_create_header.text
+            event_description = addingevent.ids.event_create_description.text
+            event_location = addingevent.ids.event_create_location.text
+            event_type = addingevent.ids.event_create_type.text
+
+            addingevent.ids.event_create_header.text = ""
+            addingevent.ids.event_create_description.text = ""
+            addingevent.ids.to_time_event.text = "до"
+            addingevent.ids.from_time_event.text = "c"
+            addingevent.ids.date_of_event.text = "дата"
+            self.sm.current = "main"
+            backend.submit_event(event_title, event_description, self.date_event, self.begining_time_event,
+                                 self.ending_time_event, event_type, event_location)
+
+    # открытие диалогового окна выбора даты заданий
     def chose_date(self):
-        date_dialog = MDDatePicker(year=int(self.date_time_now.year), month=int(self.date_time_now.month),
-                                   day=int(self.date_time_now.day))
+        date_dialog = MDDatePicker(year=int(pd.datetime.now().year), month=int(pd.datetime.now().month),
+                                   day=int(pd.datetime.now().day))
         date_dialog.bind(on_save=self.chose_date_complete)
         date_dialog.open()
 
+    # выбор даты заданий
     def chose_date_complete(self, instance, value, date):
         self.date_of_list = value
         app = MDApp.get_running_app()
@@ -458,6 +564,7 @@ class YourDayApp(MDApp):
                                                 pos_hint={"center_y": .5}))
                 mainscreen.ids.task_bar.add_widget(task_card)
 
+    # сортировка заданий по времени
     def sort_tasks(self):
         n = len(self.tasks_reminders)
         for j in range(n):
@@ -483,11 +590,12 @@ class YourDayApp(MDApp):
             if already_sorted:
                 break
 
+    # начало таймера по заданию
     def start_timer(self):
         app = MDApp.get_running_app()
         timer = app.root.get_screen('timer')
         for task in self.tasks_reminders:
-            if task.date == str(self.date_time_now.date()).replace(",", "-") and int(
+            if task.date == str(pd.datetime.now().date()).replace(",", "-") and int(
                     task.time_end.split(":")[0]) * 60 + int(
                 task.time_end.split(":")[1]) > int(self.current_time.split(":")[0]) * 60 + int(
                 self.current_time.split(":")[1]):
@@ -496,6 +604,7 @@ class YourDayApp(MDApp):
                 self.current_task_begin = task.time_begin
                 break
 
+    # обновление таймера по заданию
     def update_timer(self, *args):
         try:
             self.current_time = str(datetime.datetime.now().time())
@@ -517,6 +626,7 @@ class YourDayApp(MDApp):
         except(ValueError):
             pass
 
+    # фильтровка заданий по типу
     def filter_tasks(self, filter):
         app = MDApp.get_running_app()
         mainscreen = app.root.get_screen('main')
@@ -563,14 +673,23 @@ class YourDayApp(MDApp):
                                                     pos_hint={"center_y": .5}))
                     mainscreen.ids.task_bar.add_widget(task_card)
 
+    # добавление мероприятия к заданиям
     def add_event_to_tasks(self):
         self.tasks_reminders.append(
             Task_reminder(self.current_event.title, self.current_event.type, self.current_event.time_begin,
-                          self.current_event.time_end, self.current_event.date))
+                          self.current_event.time_end, self.current_event.date, False, -1))
+        if self.use_network:
+            handler = self.upload_tasks(self.tasks_reminders[-1])
+            if handler[0] == 1:
+                self.tasks_reminders.remove(self.tasks_reminders[-1])
+                self.tasks_reminders.append(
+                    Task_reminder(self.current_event.title, self.current_event.type, self.current_event.time_begin,
+                                  self.current_event.time_end, self.current_event.date, True, handler[1]))
         self.save_tasks()
         self.sort_tasks()
         self.filter_tasks("@")
 
+    # вход в режим удаления
     def enter_delete_mode(self):
         app = MDApp.get_running_app()
         mainscreen = app.root.get_screen('main')
@@ -606,16 +725,20 @@ class YourDayApp(MDApp):
                                                     pos_hint={"center_y": .5}))
                 mainscreen.ids.task_bar.add_widget(task_card)
 
+    # удаление заданий
     def delete_task(self, args, task):
         for task_a in self.tasks_reminders:
             if task.parent.children[2].text == task_a.name and task_a.time_begin == \
                     task.parent.children[1].text.split("-")[0] and task_a.time_end == \
                     task.parent.children[1].text.split("-")[1]:
                 if str(self.date_of_list) == task_a.date:
+                    if task_a.uploaded and self.use_network:
+                        backend.delete_task(task_a.id)
                     self.tasks_reminders.remove(task_a)
                     self.save_tasks()
 
                     break
+                # всплывающее окно выбора способа удаления (полнистью или на сегодня)
                 elif str(self.date_of_list.weekday()) in task_a.date:
                     buttoncallback1 = partial(self.delete_completely, task_a)
                     buttoncallback2 = partial(self.delete_for_the_day, task_a)
@@ -637,59 +760,61 @@ class YourDayApp(MDApp):
         self.filter_tasks(self.current_filter)
         self.enter_delete_mode()
 
+    # удаление полностью
     def delete_completely(self, task, args):
+        if task.uploaded and self.use_network:
+            backend.delete_task(task.id)
 
         self.tasks_reminders.remove(task)
         self.save_tasks()
         self.dialog.dismiss()
         self.filter_tasks(self.current_filter)
 
+    # удаление на сегодня
     def delete_for_the_day(self, task, args):
         self.tasks_reminders.remove(task)
         new_task = Task_reminder(task.name, task.type, task.time_begin, task.time_end,
-                                 task.date + f"-{self.date_of_list}")
+                                 task.date + f"-{self.date_of_list}", False, -1)
+        if (not task.uploaded) and self.use_network:
+            handler = self.upload_tasks(task)
+            if handler[0] == 1:
+                new_task = Task_reminder(task.name, task.type, task.time_begin, task.time_end,
+                                         task.date + f"-{self.date_of_list}", True, handler[1])
+        else:
+            new_task = Task_reminder(task.name, task.type, task.time_begin, task.time_end,
+                                     task.date + f"-{self.date_of_list}", True, task.id)
+        if self.use_network:
+            backend.change_task_date(new_task.id, new_task.date)
         self.tasks_reminders.append(new_task)
         self.sort_tasks()
         self.filter_tasks(self.current_filter)
         self.save_tasks()
         self.dialog.dismiss()
 
-    def save_settings(self):
-        with open("settings.pickle", "wb") as f:
-            pickle.dump([self.use_va], f, 5)
-
-    def load_settings(self):
-        try:
-            with open("settings.pickle", "rb") as f:
-                settings = pickle.load(f)
-                self.use_va = settings[0]
-                print(self.use_va)
-        except(EOFError, FileNotFoundError):
-            pass
-
-    def set_va(self):
-        app = MDApp.get_running_app()
-        settings = app.root.get_screen('settings')
-        self.use_va = settings.ids.use_va_switch.active
-
+    # сохранение списка заданий на устройство
     def save_tasks(self):
         with open("data.pickle", "wb") as f:
             pickle.dump(self.tasks_reminders, f, 5)
 
+    # загрузка заданий с устройства
     def load_tasks(self):
         try:
+            tasks = []
             with open("data.pickle", "rb") as f:
-                tasks = pickle.load(f)
-                return tasks
+                while True:
+                    tasks = pickle.load(f)
+                    print(tasks)
         except(EOFError, FileNotFoundError):
-            return []
+            return tasks
 
+    # выбор периода дат фильтра мероприятий
     def set_event_date_range(self):
-        date_dialog = MDDatePicker(year=int(self.date_time_now.year), month=int(self.date_time_now.month),
-                                   day=int(self.date_time_now.day), mode="range")
+        date_dialog = MDDatePicker(year=int(pd.datetime.now().year), month=int(pd.datetime.now().month),
+                                   day=int(pd.datetime.now().day), mode="range")
         date_dialog.bind(on_save=self.set_date_event_range_complete)
         date_dialog.open()
 
+    # завершение выбора дат фильтра мероприятий
     def set_date_event_range_complete(self, instance, value, date):
         self.begin_date_of_events = str(date[0]).replace("-", ".").split(".")[2] + "." + \
                                     str(date[0]).replace("-", ".").split(".")[1] + "." + \
@@ -704,11 +829,13 @@ class YourDayApp(MDApp):
         eventlist.ids.date_of_events_button.text = self.dates_of_events
         self.set_events_in_list(self.current_event_type)
 
+    # выбор места фильтра мероприятий
     def choose_location(self):
         app = MDApp.get_running_app()
         events = app.root.get_screen('events')
         self.current_location = events.ids.location_spinner.text
 
+    # регистрация
     def register(self):
         app = MDApp.get_running_app()
         reg = app.root.get_screen('register')
@@ -717,27 +844,24 @@ class YourDayApp(MDApp):
         last_name = reg.ids.last_name_input.text
         password = reg.ids.password_input.text
         password_rep = reg.ids.password_repeat_input.text
-        user_city = reg.ids.city_dr_do.text
         if not password_rep == password:
             reg.ids.out_reg.text = "пароли не совпадают"
         else:
-            handler = backend.regestration(first_name, last_name, email, password, user_city)
+            handler = backend.regestration(first_name, last_name, email, password)
             if handler[0] == 1:
-                self.sm.current = "query"
+                self.sm.current = "main"
                 self.save_login_data(email, password)
                 self.email = email
                 self.user_id = handler[1]
-                self.logged_in = True
-                self.user_city = user_city
                 account = app.root.get_screen('account')
                 account.ids.username_label.text = f"{first_name}\n{last_name}"
                 account.ids.email_label.text = f"email: {email}"
-
             elif handler[0] == 0:
                 reg.ids.out_reg.text = "эта электронная почта занята"
             elif handler[0] == -1:
                 reg.ids.out_reg.text = "ошибка соединения"
 
+    # вход
     def login(self):
         app = MDApp.get_running_app()
         log = app.root.get_screen('login')
@@ -748,12 +872,21 @@ class YourDayApp(MDApp):
             self.sm.current = "main"
             self.save_login_data(email, password)
             self.email = email
-            self.logged_in = True
             account = app.root.get_screen('account')
             account.ids.username_label.text = f"{handler[1]}\n{handler[2]}"
             account.ids.email_label.text = f"email: {email}"
             self.paid_subscriber = handler[3]
             self.user_id = handler[4]
+            tsks = backend.get_tasks(self.user_id)
+            tasks_uploaded = []
+            try:
+                tsks = tsks[0]
+                tasks_uploaded.append(Task_reminder(tsks[0], tsks[1], tsks[2], tsks[3], tsks[4], True, tsks[6]))
+            except:
+                pass
+            tasks_saved = self.load_tasks()
+            self.compare_choose(tasks_saved, tasks_uploaded)
+
 
         elif handler[0] == 1:
             log.ids.out_log.text = "неверный пароль"
@@ -762,10 +895,12 @@ class YourDayApp(MDApp):
         elif handler[0] == -1:
             log.ids.out_log.text = "ошибка соединения"
 
+    # сохранение данных входа
     def save_login_data(self, email, password):
         with open("login_data.pickle", "wb") as f:
             pickle.dump([email, password], f, 5)
 
+    # попытка входа с сохранёнными данными
     def init_login(self):
         try:
             with open("login_data.pickle", "rb") as f:
@@ -777,26 +912,83 @@ class YourDayApp(MDApp):
                 account = app.root.get_screen('account')
                 self.email = log_data[0]
                 self.user_id = handler[4]
-                self.logged_in = True
                 account.ids.username_label.text = f"{handler[1]}\n{handler[2]}"
                 account.ids.email_label.text = f"email: {log_data[0]}"
                 self.paid_subscriber = handler[3]
+                tsks = backend.get_tasks(self.user_id)
+
+                tasks_uploaded = []
+                try:
+                    tsks = tsks[0]
+                    tasks_uploaded.append(Task_reminder(tsks[0], tsks[1], tsks[2], tsks[3], tsks[4], True, tsks[6]))
+                except:
+                    pass
+                tasks_saved = self.load_tasks()
+                self.compare_choose(tasks_saved, tasks_uploaded)
         except:
             pass
 
+    # выход из аккаунта
     def logout(self):
         os.remove("login_data.pickle")
         self.sm.current = "register"
         with open("data.pickle", "wb") as f:
             pickle.dump("", f)
 
-    def save_interests(self):
-        app = MDApp.get_running_app()
-        query = app.root.get_screen('query')
-        concerts_interest = query.ids.concerts_slider.value
-        sports_interest = query.ids.sports_slider.value
-        recreation_interest = query.ids.recreation_slider.value
-        backend.set_interests(self.user_id, sports_interest, concerts_interest, recreation_interest)
+    # загрузка задания на сервер
+    def upload_tasks(self, task):
+        return backend.upload_tasks(task.name, task.type, task.time_begin, task.time_end, task.date, self.user_id)
+
+    # сравнение и выбор заданий на устройстве и на сервере
+    def compare_choose(self, saved_ts, uploaded_ts):
+        dif = False
+        if len(saved_ts) == len(uploaded_ts):
+            for task in saved_ts:
+                if not task.uploaded:
+                    dif = True
+                    break
+        else:
+            dif = True
+        if dif:
+            choose_saved = partial(self.choose_saved, saved_ts)
+            choose_uploaded = partial(self.choose_uploaded, uploaded_ts)
+            self.dialog = MDDialog(
+                title="Внимание!",
+                text="Данные в облаке и на устройстве отличаются.",
+                buttons=[
+                    MDFlatButton(
+                        text="ЗАГРУЗИТЬ ЛОКАЛЬНЫЕ",
+                        on_release=choose_saved
+                    ),
+                    MDFlatButton(
+                        text="ЗАГРУЗИТЬ ИЗ ОБЛАКА",
+                        on_release=choose_uploaded
+                    ),
+                ],
+            )
+            self.dialog.open()
+
+    # выбор сохранённых заданий
+    def choose_saved(self, tasks, args):
+        backend.clear_tasks(self.user_id)
+        self.tasks_reminders = []
+        for task in tasks:
+            handle = backend.upload_tasks(task.name, task.type, task.time_begin, task.time_end, task.date, self.user_id)
+            if handle[0] == 1:
+                self.tasks_reminders.append(
+                    Task_reminder(task.name, task.type, task.time_begin, task.time_end, task.date, True, handle[1]))
+        self.save_tasks()
+        self.dialog.dismiss()
+        self.filter_tasks("@")
+
+    # выбор заданий на сервере
+    def choose_uploaded(self, tasks, args):
+        self.tasks_reminders = []
+        for task in tasks:
+            self.tasks_reminders.append(Task_reminder(task[0], task[1], task[2], task[3], task[4], True, task[6]))
+        self.save_tasks()
+        self.dialog.dismiss()
+        self.filter_tasks("@")
 
 
 YourDayApp().run()
