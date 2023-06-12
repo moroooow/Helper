@@ -88,6 +88,7 @@ ScreenManager:
             text: "Использовать без сети"
             pos_hint: {"center_x": .5}
             on_release: app.use_network = False
+            on_release: app.logged_in = True
             on_release: app.root.current = "main"
             background_color: (230, 230, 230, 1)
 
@@ -135,6 +136,7 @@ ScreenManager:
             text: "Использовать без сети"
             pos_hint: {"center_x": .5}
             on_release: app.use_network = False
+            on_release: app.logged_in = True
             on_release: app.root.current = "main"
             background_color: (230, 230, 230, 1)
 
@@ -376,10 +378,52 @@ ScreenManager:
                         size: 140, 140
 
 
+<SettingsScreen>:
+    name: "settings"
+    MDBoxLayout:
+        orientation: "vertical"
+        padding: 10
+        spacing: 20
+        FloatLayout:
+            size_hint: 1, None
+            height: 70
+            Button:
+                pos_hint: {"center_y": .5, "left": 1}
+                size_hint: None, None
+                size: 100, 50
+                on_release: app.root.current = "main"
+                background_color: 0,0,0,0
+
+                Image:
+                    source: app.back_icon
+                    center_x: self.parent.center_x
+                    center_y: self.parent.center_y
+                    size_hint: None, None
+                    size: 70, 70
+        MDCard:
+            size_hint: 1, None
+            height: 80
+            radius: 10
+            GridLayout:
+                cols: 2
+                padding: 10
+                spacing: 20
+
+                MDLabel:
+                    pos_hint: {"center_y": 0.5}
+                    text: "Голосовой\nпомощник"
+
+                MDSwitch:
+                    id: use_va_switch
+                    pos_hint: {"center_y": 0.5}
+                    active: app.use_va
+                    on_active: app.set_va()
+                    on_active: app.save_settings()
+        MDLabel:
+
 <AccountScreen>:
     name: "account"
     MDBoxLayout:
-        id: account_buttons_layout
         orientation: "vertical"
         padding: 10
         spacing: 20
@@ -439,7 +483,13 @@ ScreenManager:
             markup: True
 
             text: "[b][color=#14a322]—[/color] Оформить\n  подписку[/b]"
-            ##on_release: app.buy_subscription()
+
+
+        MDTextButton:
+            markup: True
+
+            text: "[b][color=#e3a598]—[/color] Настройки[/b]"
+            on_release: app.root.current = "settings"
 
         MDTextButton:
             markup: True
