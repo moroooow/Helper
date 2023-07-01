@@ -5,10 +5,17 @@
 
 
 <EventCard@MDCard>:
-    elevation: 20
+    elevation: 1
     size_hint: None, None
     size: 150, 200
     radius: 10
+
+<BackImage@Image>:
+    source: app.back_icon
+    center_x: self.parent.center_x
+    center_y: self.parent.center_y
+    size_hint: None, None
+    size: dp(50), dp(50)
 
 
 ScreenManager:
@@ -27,8 +34,8 @@ ScreenManager:
     name: "register"
 
     BoxLayout:
-        padding: 10
-        spacing: 10
+        padding:dp(10)
+        spacing: dp(10)
         orientation: "vertical"
         MDLabel:
             halign: "center"
@@ -101,14 +108,14 @@ ScreenManager:
 <LoginScreen>:
     name: "login"
     BoxLayout:
-        padding: 10
-        spacing: 10
+        padding: dp(10)
+        spacing: dp(10)
         orientation: "vertical"
         MDLabel:
             halign: "center"
             text: "Вход"
             size_hint: 1, None
-            height: 100
+            height: dp(100)
 
         MDTextField:
             id: email_input
@@ -160,11 +167,11 @@ ScreenManager:
                     size_hint: None, 1
                     width: 310
                     pos_hint: {"center_x": .5, "top": 1}
-                    spacing: 10
-                    padding: 0, 10, 0, 0
+                    spacing: dp(10)
+                    padding: 0, dp(10), 0, 0
                     EventCard:
                         BoxLayout:
-                            padding: 10
+                            padding: dp(10)
                             orientation: "vertical"
                             Image:
                                 source: app.recreation_event_img
@@ -177,7 +184,7 @@ ScreenManager:
 
                     EventCard:
                         BoxLayout:
-                            padding: 10
+                            padding: dp(10)
                             orientation: "vertical"
                             Image:
                                 source: app.sports_event_img
@@ -190,7 +197,7 @@ ScreenManager:
 
                     EventCard:
                         BoxLayout:
-                            padding: 10
+                            padding: dp(10)
                             orientation: "vertical"
                             Image:
                                 source: app.concerts_event_img
@@ -215,23 +222,23 @@ ScreenManager:
     name: "main"
     MDBoxLayout:
         orientation: "vertical"
-        padding: 20
+        padding:dp(20)
 
 
         MDBoxLayout:
             orientation: "horizontal"
             size_hint_y: None
             size_hint_x: 1
-            height: 70
+            height: dp(70)
 
             MDCard:
-                elevation: 20
-                spacing: 10
-                padding: 10
+                elevation: 1
+                spacing: dp(10)
+                padding: dp(10)
                 Button:
                     pos_hint: {"center_y": .5}
                     size_hint: None, None
-                    size: 60, 60
+                    size: dp(60), dp(60)
                     background_color: 0,0,0,0
                     on_release: app.root.current = "account"
                     Image:
@@ -240,7 +247,7 @@ ScreenManager:
                         center_x: self.parent.center_x
                         center_y: self.parent.center_y
                         size_hint: None, None
-                        size: 160, 160
+                        size: dp(160), dp(160)
 
                 ScrollView:
                     size_hint: 1, 1
@@ -256,7 +263,7 @@ ScreenManager:
                                 center_x: self.parent.center_x
                                 center_y: self.parent.center_y
                                 size_hint_x: None
-                                width: 80
+                                width: dp(80)
 
                         FilterButton:
                             on_release: app.filter_tasks("работа")
@@ -265,7 +272,7 @@ ScreenManager:
                                 center_x: self.parent.center_x
                                 center_y: self.parent.center_y
                                 size_hint_x: None
-                                width: 80
+                                width: dp(80)
 
                         FilterButton:
                             on_release: app.filter_tasks("учёба")
@@ -274,7 +281,7 @@ ScreenManager:
                                 center_x: self.parent.center_x
                                 center_y: self.parent.center_y
                                 size_hint_x: None
-                                width: 80
+                                width: dp(80)
 
                         FilterButton:
                             on_release: app.filter_tasks("покупки")
@@ -283,7 +290,7 @@ ScreenManager:
                                 center_x: self.parent.center_x
                                 center_y: self.parent.center_y
                                 size_hint_x: None
-                                width: 80
+                                width: dp(80)
 
                         FilterButton:
                             on_release: app.filter_tasks("отдых")
@@ -292,7 +299,7 @@ ScreenManager:
                                 center_x: self.parent.center_x
                                 center_y: self.parent.center_y
                                 size_hint_x: None
-                                width: 80
+                                width: dp(80)
 
                         FilterButton:
                             on_release: app.filter_tasks("другое")
@@ -301,11 +308,11 @@ ScreenManager:
                                 center_x: self.parent.center_x
                                 center_y: self.parent.center_y
                                 size_hint_x: None
-                                width: 80
+                                width: dp(80)
 
                 Button:
                     size_hint: None, None
-                    size: 50, 50
+                    size: dp(50), dp(50)
                     pos_hint: {"center_y": .5}
                     background_color: 0,0,0,0
                     on_release: app.enter_delete_mode()
@@ -314,29 +321,29 @@ ScreenManager:
                         size_hint: None, None
                         center_x: self.parent.center_x
                         center_y: self.parent.center_y
-                        size: 50, 50
+                        size: dp(50), dp(50)
 
         ScrollView:
             size_hint: 1, 1
             GridLayout:
-                padding: 0, 10, 0, 0
+                padding: 0, dp(10), 0, 0
                 id: task_bar
                 cols: 1
                 size_hint: 1, None
                 height: self.minimum_height
-                spacing: 10
+                spacing: dp(10)
                 canvas.before:
         MDCard:
             size_hint_x: 1
             size_hint_y: None
-            height: 80
-            elevation: 20
+            height: dp(80)
+            elevation: 1
             MDFloatLayout:
 
                 Button:
                     pos_hint: {"center_y": .5, "center_x": .15}
                     size_hint: None, None
-                    size: 55, 55
+                    size: dp(55), dp(55)
                     on_release: app.root.current = "addingtask"
                     background_color: 0,0,0,0
 
@@ -346,12 +353,12 @@ ScreenManager:
                         center_x: self.parent.center_x
                         center_y: self.parent.center_y
                         size_hint: None, None
-                        size: 140, 140
+                        size: dp(140), dp(140)
 
                 Button:
                     pos_hint: {"center_y": .5, "center_x": .5}
                     size_hint: None, None
-                    size: 60, 60
+                    size: dp(60), dp(60)
                     background_color: 0,0,0,0
                     on_release: app.chose_date()
                     Image:
@@ -360,13 +367,13 @@ ScreenManager:
                         center_x: self.parent.center_x
                         center_y: self.parent.center_y
                         size_hint: None, None
-                        size: 160, 160
+                        size: dp(160), dp(160)
 
                 Button:
                     pos_hint: {"center_y": .5, "center_x": .85}
                     size_hint: None, None
                     background_color: 0,0,0,0
-                    size: 55, 55
+                    size: dp(55), dp(55)
                     on_release: app.root.current = "timer"
                     on_release: app.start_timer()
                     Image:
@@ -375,7 +382,7 @@ ScreenManager:
                         center_x: self.parent.center_x
                         center_y: self.parent.center_y
                         size_hint: None, None
-                        size: 140, 140
+                        size: dp(140), dp(140)
 
 
 <SettingsScreen>:
@@ -425,8 +432,8 @@ ScreenManager:
     name: "account"
     MDBoxLayout:
         orientation: "vertical"
-        padding: 10
-        spacing: 20
+        padding: dp(10)
+        spacing: dp(20)
 
         canvas.before:
             Color:
@@ -438,11 +445,11 @@ ScreenManager:
 
 
         MDBoxLayout:
-            spacing: 120
+            spacing: dp(120)
             orientation: "horizontal"
             pos_hint: {"top": 1, "left": 1}
             size_hint: 1, None
-            height: 100
+            height: dp(100)
 
             canvas:
                 Color:
@@ -468,7 +475,7 @@ ScreenManager:
             id: email_label
             font_size: 16
             size_hint: None, None
-            size: 500, 10
+            size: dp(500), dp(10)
 
         MDTextButton:
             markup: True
@@ -503,20 +510,15 @@ ScreenManager:
         MDLabel:
         FloatLayout:
             size_hint: 1, None
-            height: 70
+            height: dp(70)
             Button:
                 pos_hint: {"center_y": .5, "left": 1}
                 size_hint: None, None
-                size: 100, 50
+                size: dp(100), dp(50)
                 on_release: app.root.current = "main"
                 background_color: 0,0,0,0
 
-                Image:
-                    source: app.back_icon
-                    center_x: self.parent.center_x
-                    center_y: self.parent.center_y
-                    size_hint: None, None
-                    size: 70, 70
+                BackImage:
 
 
 <EventsListScreen>:
@@ -524,45 +526,40 @@ ScreenManager:
 
     MDBoxLayout:
         orientation: "vertical"
-        padding: 10
+        padding: dp(10)
 
         MDCard:
-            elevation: 20
+            elevation: 1
             size_hint: 1, None
-            height: 70
+            height: dp(70)
             FloatLayout:
 
                 Button:
                     pos_hint: {"center_y": .5, "left": 1}
                     size_hint: None, None
-                    size: 100, 50
+                    size: dp(100), dp(50)
                     on_release: app.root.current = "events"
                     background_color: 0,0,0,0
 
-                    Image:
-                        source: app.back_icon
-                        center_x: self.parent.center_x
-                        center_y: self.parent.center_y
-                        size_hint: None, None
-                        size: 70, 70
+                    BackImage:
 
                 Button:
                     id: date_of_events_button
                     text: app.dates_of_events
                     pos_hint: {"center_y": .5, "right": 1}
                     size_hint: None, None
-                    size: 200, 50
+                    size: dp(200), dp(50)
                     on_release: app.set_event_date_range()
 
         ScrollView:
             size_hint: 1, 1
             MDBoxLayout:
-                padding: 0, 10, 0, 0
+                padding: 0, dp(10), 0, 0
                 size_hint: 1, None
                 height: self.minimum_height
                 id: events_list_layout
                 orientation: "vertical"
-                spacing: 10
+                spacing: dp(10)
 
 
 <EventsScreen>:
@@ -570,35 +567,30 @@ ScreenManager:
 
     MDBoxLayout:
         orientation: "vertical"
-        padding: 10
+        padding: dp(10)
 
         MDCard:
-            elevation: 20
+            elevation: 1
             size_hint: 1, None
-            height: 70
+            height: dp(70)
 
             FloatLayout:
 
                 Button:
                     pos_hint: {"center_y": .5, "left": 1}
                     size_hint: None, None
-                    size: 100, 50
+                    size: dp(100), dp(50)
                     on_release: app.root.current = "main"
                     background_color: 0,0,0,0
 
-                    Image:
-                        source: app.back_icon
-                        center_x: self.parent.center_x
-                        center_y: self.parent.center_y
-                        size_hint: None, None
-                        size: 70, 70
+                    BackImage:
 
                 Spinner:
                     id: location_spinner
                     text: "Город"
                     pos_hint: {"center_y": .5, "right": 1}
                     size_hint: None, None
-                    size: 100, 50
+                    size: dp(100), dp(50)
                     values: app.cities
                     on_text: app.choose_location()
 
@@ -612,14 +604,14 @@ ScreenManager:
                 GridLayout:
                     cols: 2
                     size_hint: None, 1
-                    width: 310
+                    width: dp(310)
                     pos_hint: {"center_x": .5, "top": 1}
-                    spacing: 10
-                    padding: 0, 10, 0, 0
+                    spacing: dp(10)
+                    padding: 0, dp(10), 0, 0
 
                     EventCard:
                         BoxLayout:
-                            padding: 10
+                            padding: dp(10)
                             orientation: "vertical"
                             Image:
                                 source: app.recreation_event_img
@@ -631,7 +623,7 @@ ScreenManager:
 
                     EventCard:
                         BoxLayout:
-                            padding: 10
+                            padding: dp(10)
                             orientation: "vertical"
                             Image:
                                 source: app.sports_event_img
@@ -643,7 +635,7 @@ ScreenManager:
 
                     EventCard:
                         BoxLayout:
-                            padding: 10
+                            padding: dp(10)
                             orientation: "vertical"
                             Image:
                                 source: app.concerts_event_img
@@ -659,35 +651,30 @@ ScreenManager:
 
     BoxLayout:
         orientation: "vertical"
-        padding: 10
+        padding: dp(10)
 
         MDCard:
-            elevation: 20
+            elevation: 1
             size_hint: 1, None
-            height: 70
+            height: dp(70)
 
             FloatLayout:
                 size_hint: 1, None
-                height: 70
+                height: dp(70)
 
                 Button:
                     pos_hint: {"center_y": .5, "left": 1}
                     size_hint: None, None
-                    size: 100, 50
+                    size: dp(100), dp(50)
                     on_release: app.root.current = "eventlist"
                     background_color: 0,0,0,0
 
-                    Image:
-                        source: app.back_icon
-                        center_x: self.parent.center_x
-                        center_y: self.parent.center_y
-                        size_hint: None, None
-                        size: 70, 70
+                    BackImage:
 
         ScrollView:
             BoxLayout:
                 orientation: "vertical"
-                spacing: 10
+                spacing: dp(10)
                 Image:
                     id: event_image
                     pos_hint: {"center_x": .5}
@@ -696,8 +683,8 @@ ScreenManager:
                 ScrollView:
                     size_hint: 1, 1
                     BoxLayout:
-                        spacing: 10
-                        padding: 20
+                        spacing: dp(10)
+                        padding: dp(20)
                         orientation: "vertical"
                         size_hint: 1, None
                         height: self.minimum_height
@@ -723,31 +710,26 @@ ScreenManager:
 
 
     BoxLayout:
-        padding: 10
+        padding: dp(10)
 
         MDCard:
             radius: 10
-            elevation: 20
-            padding: 10
-            spacing: 10
+            elevation: 1
+            padding: dp(10)
+            spacing: dp(10)
             BoxLayout:
-                padding: 10
+                padding: dp(10)
                 orientation: "vertical"
                 FloatLayout:
                     Button:
                         pos_hint: {"top": 1, "left": 1}
                         size_hint: None, None
-                        size: 100, 50
+                        size: dp(100), dp(50)
                         on_release: app.root.current = "main"
                         on_release: app.reset_time()
                         background_color: 0,0,0,0
 
-                        Image:
-                            source: app.back_icon
-                            center_x: self.parent.center_x
-                            center_y: self.parent.center_y
-                            size_hint: None, None
-                            size: 70, 70
+                        BackImage:
 
 
 
@@ -756,24 +738,24 @@ ScreenManager:
                     text: "другое"
                     values: app.task_types
                     size_hint: None, None
-                    size: 100, 50
+                    size: dp(100), dp(50)
                     pos_hint: {"center_x": .5}
 
                 MDLabel:
                     size_hint: 1, None
-                    height: 30
+                    height: dp(30)
 
                 GridLayout:
                     cols: 2
                     size_hint: 1, None
-                    height: 200
+                    height: dp(200)
                     BoxLayout:
                         orientation: "horizontal"
 
                         MDCheckbox:
                             id: chb_once
                             size_hint: None, None
-                            size: 40, 40
+                            size: dp(40), dp(40)
                             pos_hint: {"center_y": .5}
                             active: True
 
@@ -786,7 +768,7 @@ ScreenManager:
                         MDCheckbox:
                             id: chb_mon
                             size_hint: None, None
-                            size: 40, 40
+                            size: dp(40),dp(40)
                             pos_hint: {"center_y": .5}
 
                         MDLabel:
@@ -798,7 +780,7 @@ ScreenManager:
                         MDCheckbox:
                             id: chb_tue
                             size_hint: None, None
-                            size: 40, 40
+                            size: dp(40), dp(40)
                             pos_hint: {"center_y": .5}
 
                         MDLabel:
@@ -810,7 +792,7 @@ ScreenManager:
                         MDCheckbox:
                             id: chb_wed
                             size_hint: None, None
-                            size: 40, 40
+                            size: dp(40), dp(40)
                             pos_hint: {"center_y": .5}
 
                         MDLabel:
@@ -822,7 +804,7 @@ ScreenManager:
                         MDCheckbox:
                             id: chb_thu
                             size_hint: None, None
-                            size: 40, 40
+                            size: dp(40), dp(40)
                             pos_hint: {"center_y": .5}
 
                         MDLabel:
@@ -834,7 +816,7 @@ ScreenManager:
                         MDCheckbox:
                             id: chb_fri
                             size_hint: None, None
-                            size: 40, 40
+                            size: dp(40), dp(40)
                             pos_hint: {"center_y": .5}
 
                         MDLabel:
@@ -846,7 +828,7 @@ ScreenManager:
                         MDCheckbox:
                             id: chb_sat
                             size_hint: None, None
-                            size: 40, 40
+                            size: dp(40), dp(40)
                             pos_hint: {"center_y": .5}
 
                         MDLabel:
@@ -858,7 +840,7 @@ ScreenManager:
                         MDCheckbox:
                             id: chb_sun
                             size_hint: None, None
-                            size: 40, 40
+                            size: dp(40), dp(40)
                             pos_hint: {"center_y": .5}
 
                         MDLabel:
@@ -870,11 +852,11 @@ ScreenManager:
 
                 GridLayout:
                     cols: 2
-                    spacing: 30
-                    padding: 30
+                    spacing: dp(30)
+                    padding: dp(30)
                     pos_hint: {"center_x": .5}
                     size_hint: None, 1
-                    width: 265
+                    width: dp(265)
 
                     MDFillRoundFlatButton:
                         id: from_button
@@ -900,50 +882,45 @@ ScreenManager:
 
     BoxLayout:
         orientation: "vertical"
-        padding: 10
-        spacing: 10
+        padding: dp(10)
+        spacing: dp(10)
 
         FloatLayout:
             size_hint: 1, None
-            height: 70
+            height: dp(70)
 
             Button:
                 pos_hint: {"top": 1, "left": 1}
                 size_hint: None, None
-                size: 100, 50
+                size: dp(100), dp(50)
                 on_release: app.root.current = "account"
                 background_color: 0,0,0,0
 
-                Image:
-                    source: app.back_icon
-                    center_x: self.parent.center_x
-                    center_y: self.parent.center_y
-                    size_hint: None, None
-                    size: 70, 70
+                BackImage:
 
         GridLayout:
             cols: 1
-            spacing: 10
+            spacing: dp(10)
             Spinner:
                 id: event_create_type
                 text: "Тип мероприятия"
                 pos_hint: {"top": 1, "center_x": .5}
                 size_hint: None, None
-                size: 100, 50
+                size: dp(100), dp(50)
                 values: app.event_types
             Spinner:
                 id: event_create_location
                 text: "Город"
                 pos_hint: {"top": 1, "center_x": .5}
                 size_hint: None, None
-                size: 100, 50
+                size: dp(100), dp(50)
                 values: app.cities
 
             GridLayout:
-                spacing: 10
+                spacing: dp(10)
                 cols: 2
                 size_hint: 1, None
-                height: 100
+                height: dp(100)
 
                 MDFillRoundFlatButton:
                     id: from_time_event
@@ -966,7 +943,7 @@ ScreenManager:
                     size_hint: 1, None
                     height: self.minimum_height
                     orientation: "vertical"
-                    spacing: 10
+                    spacing: dp(10)
                     MDTextField:
                         id: event_create_header
                         hint_text: "Заголовок"
@@ -987,26 +964,19 @@ ScreenManager:
 
     BoxLayout:
         orientation: "vertical"
-        padding: 10
-        spacing: 10
+        padding: dp(10)
+        spacing: dp(10)
 
-        FloatLayout:
-            size_hint: 1, None
-            height: 70
+        Button:
+            pos_hint: {"top": 1, "left": 1}
+            size_hint: None, None
+            size: dp(40), dp(40)
+            on_release: app.root.current = "main"
+            background_color: 0,0,0,0
 
-            Button:
-                pos_hint: {"top": 1, "left": 1}
-                size_hint: None, None
-                size: 100, 50
-                on_release: app.root.current = "main"
-                background_color: 0,0,0,0
+            BackImage:
 
-                Image:
-                    source: app.back_icon
-                    center_x: self.parent.center_x
-                    center_y: self.parent.center_y
-                    size_hint: None, None
-                    size: 70, 70
+        MDLabel:
 
         MDLabel:
             id: current_task
@@ -1017,7 +987,7 @@ ScreenManager:
         Image:
             source: app.clock_icon
             size_hint: None, None
-            size: 300, 300
+            size: dp(300), dp(300)
             pos_hint: {"center_x": .5}
 
         MDLabel:
